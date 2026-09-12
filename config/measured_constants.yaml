@@ -14,99 +14,118 @@
 
 hardware:
   gpus_per_node:
-    value: null
+    value: 4
     units: "count"
-    source: "PENDING"
+    source: "data/hw/2026-09-12T10:51:09-05:00_154420_rpg-93-4/gpu_props.csv"
     script: "scripts/hw_snapshot.sh"
-    date: null
+    date: "2026-09-12"
   hbm_per_gpu_gib:
-    value: null
+    value: 93.1
     units: "GiB"
-    source: "PENDING"
+    source: "data/hw/2026-09-12T10:51:09-05:00_154420_rpg-93-4/gpu_props.csv"
     script: "scripts/hw_snapshot.sh"
-    date: null
+    date: "2026-09-12"
+    note: "nvidia-smi reports 95830 MiB = 93.6 GiB; torch reports 93.1 GiB usable"
   numa_nodes:
-    value: null
+    value: 4
     units: "count"
-    source: "PENDING"
+    source: "data/hw/2026-09-12T10:51:09-05:00_154420_rpg-93-4/numactl.txt"
     script: "scripts/hw_snapshot.sh"
-    date: null
+    date: "2026-09-12"
   host_dram_gib:
-    value: null
+    value: 503
     units: "GiB"
-    source: "PENDING"
+    source: "data/hw/2026-09-12T10:51:09-05:00_154420_rpg-93-4/numactl.txt"
     script: "scripts/hw_snapshot.sh"
-    date: null
+    date: "2026-09-12"
+    note: "~128 GiB per NUMA node x 4 = ~503 GiB total reported by numactl"
+  sm_clock_locked_mhz:
+    value: 345
+    units: "MHz"
+    source: "data/hw/clock_lock_evidence_2026-09-12T16:07:09-05:00.txt"
+    script: "scripts/hw_snapshot.sh"
+    date: "2026-09-12"
+    note: "All 4 GPUs locked at minimum SM clock (345 of 1785 MHz max). Confirmed with 100ms sampling during sustained GEMM. User lacks permission to change. Blocks all prefill measurements as a ceiling estimate."
+  sm_clock_max_mhz:
+    value: 1785
+    units: "MHz"
+    source: "data/hw/clock_lock_evidence_2026-09-12T16:07:09-05:00.txt"
+    script: "scripts/hw_snapshot.sh"
+    date: "2026-09-12"
 
 model:
   name:
-    value: null
+    value: "Llama-3.1-8B"
     units: "string"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
   path:
-    value: null
+    value: "/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B"
     units: "string"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
   n_layers:
-    value: null
+    value: 32
     units: "count"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
   n_kv_heads:
-    value: null
+    value: 8
     units: "count"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
   head_dim:
-    value: null
+    value: 128
     units: "count"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
   dtype:
-    value: null
+    value: "bfloat16"
     units: "string"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
   kv_bytes_per_token:
-    value: null
+    value: 131072
     units: "bytes"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
+    note: "2 * n_layers * n_kv_heads * head_dim * 2 = 2*32*8*128*2 = 131072 (128 KiB)"
   max_context:
-    value: null
+    value: 131072
     units: "tokens"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
 
 bandwidth:
   hammerspace_1stream_mbps:
-    value: null
+    value: 4420.4
     units: "MB/s"
-    source: "PENDING"
+    source: "data/raw/bw_shared_nfs_2026-09-12T11:15:22-05:00/summary.csv"
     script: "scripts/bw_sweep.sh"
-    date: null
+    date: "2026-09-12"
+    note: "NFSv4.2 over IPoIB to Hammerspace, SHARED-SCRATCH volume, --direct=1, bs=128k"
   hammerspace_8stream_mbps:
-    value: null
+    value: 4399.3
     units: "MB/s"
-    source: "PENDING"
+    source: "data/raw/bw_shared_nfs_2026-09-12T11:15:22-05:00/summary.csv"
     script: "scripts/bw_sweep.sh"
-    date: null
+    date: "2026-09-12"
+    note: "Bandwidth FLAT across 1-16 streams (4.4-4.8 GB/s). Not single-stream-limited — bottleneck is elsewhere."
   nvme_1stream_mbps:
     value: null
     units: "MB/s"
     source: "PENDING"
     script: "scripts/bw_sweep.sh"
     date: null
+    note: "Local disk sweep not yet completed (OOM on test file creation with prior allocation)"
   nvme_8stream_mbps:
     value: null
     units: "MB/s"
@@ -122,35 +141,54 @@ bandwidth:
 
 prefill:
   coeff_a_s_per_token:
+    value: 1.3062e-04
+    units: "s/token"
+    source: "data/raw/prefill_20260912T180723Z.json"
+    script: "scripts/prefill_sweep.py"
+    date: "2026-09-12"
+    note: "HF transformers forward(), SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked"
+  coeff_b_s_per_token2:
+    value: 3.7269e-09
+    units: "s/token^2"
+    source: "data/raw/prefill_20260912T180723Z.json"
+    script: "scripts/prefill_sweep.py"
+    date: "2026-09-12"
+    note: "HF transformers forward(), SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked"
+  coeff_a_vllm_s_per_token:
     value: null
     units: "s/token"
-    source: "PENDING"
-    script: "scripts/prefill_sweep.py"
-    date: null
-  coeff_b_s_per_token2:
+    source: "data/raw/prefill_vllm_20260912T191052Z.json"
+    script: "scripts/prefill_sweep_vllm.py"
+    date: "2026-09-12"
+    note: "vLLM 0.29.0 with FlashAttention v3, SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked. Fit not yet computed — raw times available in source JSON."
+  coeff_b_vllm_s_per_token2:
     value: null
     units: "s/token^2"
-    source: "PENDING"
-    script: "scripts/prefill_sweep.py"
-    date: null
+    source: "data/raw/prefill_vllm_20260912T191052Z.json"
+    script: "scripts/prefill_sweep_vllm.py"
+    date: "2026-09-12"
+    note: "vLLM 0.29.0 with FlashAttention v3, SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked. Fit not yet computed — raw times available in source JSON."
   fit_r2:
-    value: null
+    value: 1.0
     units: "dimensionless"
-    source: "PENDING"
-    script: "scripts/prefill_sweep.py"
-    date: null
+    source: "data/raw/prefill_20260912T180723Z.json"
+    script: "analysis/crossover.py"
+    date: "2026-09-12"
+    note: "HF sweep, T = a*L + b*L^2, 7 lengths from 2K-128K. SM clocks locked at 345/1785 MHz."
   achieved_tflops:
-    value: null
+    value: 152
     units: "TFLOPS"
-    source: "PENDING"
-    script: "scripts/prefill_sweep.py"
-    date: null
+    source: "data/raw/prefill_config_sweep_20260912T200514Z.json"
+    script: "scripts/prefill_config_sweep.py"
+    date: "2026-09-12"
+    note: "vLLM at 32K tokens, SM clocks locked at 345/1785 MHz (95% of 186.5 TFLOP/s clock-adjusted peak). Must be re-measured after clocks are unlocked."
   max_context_fit_1gpu:
-    value: null
+    value: 131072
     units: "tokens"
-    source: "PENDING"
+    source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
-    date: null
+    date: "2026-09-12"
+    note: "HF sweep completed all lengths through 128K on 1x H100 NVL (63.3 GiB peak HBM of 93 GiB)"
 
 crossover:
   hammerspace_tokens:
