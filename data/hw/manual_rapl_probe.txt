@@ -1,1 +1,0 @@
-cat: '/sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj': Permission denied

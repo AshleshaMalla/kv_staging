@@ -1,2 +1,0 @@
-NAME  SIZE ROTA MODEL           MOUNTPOINT
-sda   3.5T    0 PERC H755 Front 
