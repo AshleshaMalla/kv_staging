@@ -1,0 +1,173 @@
+# measured_constants.yaml — single source of truth for every number this project claims.
+#
+# UNITS ARE MANDATORY on every entry. A previous version of this project was
+# corrected for conflating GB (10^9 bytes) and GiB (2^30 bytes). Every leaf
+# must carry explicit units to prevent this from happening again.
+#
+# Schema: each leaf is a mapping with keys:
+#   value:  the measured number (null if unmeasured)
+#   units:  string, REQUIRED even when value is null
+#   source: path to raw data under data/ (or "PENDING")
+#   script: path to the script that produced this measurement
+#   date:   ISO-8601 date of measurement (null if unmeasured)
+#   note:   optional free-text
+
+hardware:
+  gpus_per_node:
+    value: null
+    units: "count"
+    source: "PENDING"
+    script: "scripts/hw_snapshot.sh"
+    date: null
+  hbm_per_gpu_gib:
+    value: null
+    units: "GiB"
+    source: "PENDING"
+    script: "scripts/hw_snapshot.sh"
+    date: null
+  numa_nodes:
+    value: null
+    units: "count"
+    source: "PENDING"
+    script: "scripts/hw_snapshot.sh"
+    date: null
+  host_dram_gib:
+    value: null
+    units: "GiB"
+    source: "PENDING"
+    script: "scripts/hw_snapshot.sh"
+    date: null
+
+model:
+  name:
+    value: null
+    units: "string"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  path:
+    value: null
+    units: "string"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  n_layers:
+    value: null
+    units: "count"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  n_kv_heads:
+    value: null
+    units: "count"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  head_dim:
+    value: null
+    units: "count"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  dtype:
+    value: null
+    units: "string"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  kv_bytes_per_token:
+    value: null
+    units: "bytes"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  max_context:
+    value: null
+    units: "tokens"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+
+bandwidth:
+  hammerspace_1stream_mbps:
+    value: null
+    units: "MB/s"
+    source: "PENDING"
+    script: "scripts/bw_sweep.sh"
+    date: null
+  hammerspace_8stream_mbps:
+    value: null
+    units: "MB/s"
+    source: "PENDING"
+    script: "scripts/bw_sweep.sh"
+    date: null
+  nvme_1stream_mbps:
+    value: null
+    units: "MB/s"
+    source: "PENDING"
+    script: "scripts/bw_sweep.sh"
+    date: null
+  nvme_8stream_mbps:
+    value: null
+    units: "MB/s"
+    source: "PENDING"
+    script: "scripts/bw_sweep.sh"
+    date: null
+  host_dram_pcie_mbps:
+    value: null
+    units: "MB/s"
+    source: "PENDING"
+    script: "scripts/bw_sweep.sh"
+    date: null
+
+prefill:
+  coeff_a_s_per_token:
+    value: null
+    units: "s/token"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  coeff_b_s_per_token2:
+    value: null
+    units: "s/token^2"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  fit_r2:
+    value: null
+    units: "dimensionless"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  achieved_tflops:
+    value: null
+    units: "TFLOPS"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+  max_context_fit_1gpu:
+    value: null
+    units: "tokens"
+    source: "PENDING"
+    script: "scripts/prefill_sweep.py"
+    date: null
+
+crossover:
+  hammerspace_tokens:
+    value: null
+    units: "tokens"
+    source: "PENDING"
+    script: "analysis/crossover.py"
+    date: null
+  nvme_tokens:
+    value: null
+    units: "tokens"
+    source: "PENDING"
+    script: "analysis/crossover.py"
+    date: null
+  dram_tokens:
+    value: null
+    units: "tokens"
+    source: "PENDING"
+    script: "analysis/crossover.py"
+    date: null

@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.eggs/
+venv/
+.venv/
+*.ipynb_checkpoints/
+
+# Model weights
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.gguf
+
+# fio test data files (large, generated on each run)
+fio_testfiles/
+
+# Editors
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# NOTE: data/raw/ and data/hw/ are NOT ignored.
+# Raw data is committed on purpose, before any aggregation.
