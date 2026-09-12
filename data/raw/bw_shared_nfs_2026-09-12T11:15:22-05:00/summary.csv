@@ -1,0 +1,6 @@
+tier,nstreams,agg_read_mbps,agg_iops,lat_mean_us,lat_p99_us
+shared_nfs,1,4420.4,35363,448.8,2867.2
+shared_nfs,2,4154.8,33239,958.5,6258.7
+shared_nfs,4,4816.9,38535,1646.4,10551.3
+shared_nfs,8,4399.3,35194,3629.7,28704.8
+shared_nfs,16,4822.3,38578,6507.9,43778.0
