@@ -1,0 +1,102 @@
+{
+  "model": "/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B",
+  "engine": "vllm",
+  "vllm_version": "0.29.0",
+  "torch_version": "2.13.0+cu130",
+  "vllm_config": {
+    "enable_prefix_caching": false,
+    "gpu_memory_utilization": 0.85,
+    "max_model_len": 131072,
+    "tensor_parallel_size": 1,
+    "enforce_eager": true
+  },
+  "model_config": {
+    "n_layers": 32,
+    "n_kv_heads": 8,
+    "n_heads": 32,
+    "head_dim": 128,
+    "hidden_size": 4096,
+    "intermediate_size": 14336,
+    "num_attention_heads": 32,
+    "max_position_embeddings": 131072
+  },
+  "kv_bytes_per_token": 131072,
+  "reps": 5,
+  "warmup": 2,
+  "timestamp": "2026-09-12T19:11:15.515934+00:00",
+  "power_csv": "data/raw/gpu_power_vllm_20260912T191052Z.csv",
+  "measurements": [
+    {
+      "length": 2048,
+      "times_s": [
+        0.1978158950805664,
+        0.19708500592969358,
+        0.19697805191390216,
+        0.19646957190707326,
+        0.19642946682870388
+      ],
+      "status": "ok"
+    },
+    {
+      "length": 4096,
+      "times_s": [
+        0.3996685140300542,
+        0.40009015100076795,
+        0.39992736000567675,
+        0.40000095684081316,
+        0.4001706950366497
+      ],
+      "status": "ok"
+    },
+    {
+      "length": 8192,
+      "times_s": [
+        0.8514685251284391,
+        0.8509825018700212,
+        0.8517083851620555,
+        0.8519037461373955,
+        0.851903964066878
+      ],
+      "status": "ok"
+    },
+    {
+      "length": 16384,
+      "times_s": [
+        1.9407427250407636,
+        1.9397754641249776,
+        1.9394797559361905,
+        1.9410431070718914,
+        1.9406372839584947
+      ],
+      "status": "ok"
+    },
+    {
+      "length": 32768,
+      "times_s": [
+        4.851011254126206,
+        4.8491745858918875,
+        4.850214381003752,
+        4.8499474611599,
+        4.849441579077393
+      ],
+      "status": "ok"
+    },
+    {
+      "length": 65536,
+      "times_s": [
+        13.58214352792129,
+        13.582504809135571,
+        13.583077752031386,
+        13.581791467033327,
+        13.583955398993567
+      ],
+      "status": "ok"
+    },
+    {
+      "length": 131072,
+      "times_s": [],
+      "status": "ERROR: The decoder prompt (length 131072) plus the number of requested output tokens (at least 1) is longer than the maximum model length of 131072. Make sure that `max_model_len` is no smaller than the number of text tokens (prompt + requested output tokens)."
+    }
+  ],
+  "end_timestamp": "2026-09-12T19:13:48.821584+00:00"
+}

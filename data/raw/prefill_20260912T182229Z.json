@@ -1,0 +1,53 @@
+{
+  "model": "/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B",
+  "model_config": {
+    "n_layers": 32,
+    "n_kv_heads": 8,
+    "head_dim": 128,
+    "hidden_size": 4096,
+    "num_attention_heads": 32,
+    "max_position_embeddings": 131072
+  },
+  "kv_bytes_per_token": 131072,
+  "reps": 5,
+  "warmup": 2,
+  "timestamp": "2026-09-12T18:21:19.498965+00:00",
+  "measurements": [
+    {
+      "length": 2048,
+      "times_s": [
+        0.29910854902118444,
+        0.2993221911601722,
+        0.2992439931258559,
+        0.29900339897722006,
+        0.2992546991445124
+      ],
+      "peak_hbm_bytes": 16905691648,
+      "status": "ok"
+    },
+    {
+      "length": 8192,
+      "times_s": [
+        1.3230780239682645,
+        1.322190400911495,
+        1.3216782258823514,
+        1.323619786882773,
+        1.322163286153227
+      ],
+      "peak_hbm_bytes": 19336339968,
+      "status": "ok"
+    },
+    {
+      "length": 32768,
+      "times_s": [
+        8.280630399938673,
+        8.277070594020188,
+        8.27999776811339,
+        8.281114251120016,
+        8.279462814796716
+      ],
+      "peak_hbm_bytes": 29063127552,
+      "status": "ok"
+    }
+  ]
+}

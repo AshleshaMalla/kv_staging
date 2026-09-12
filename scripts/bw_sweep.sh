@@ -36,12 +36,19 @@ if ! command -v fio &>/dev/null; then
     exit 1
 fi
 
-if ! command -v jq &>/dev/null; then
-    echo "WARNING: jq not found; summary extraction will be skipped" >&2
-    HAS_JQ=0
-else
-    HAS_JQ=1
-fi
+parse_fio_json() {
+    python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+r = d['jobs'][0]['read']
+bw = r['bw'] / 1024
+iops = r['iops']
+lat_mean = r['clat_ns']['mean'] / 1000
+p = r['clat_ns'].get('percentile', {})
+lat_p99 = p.get('99.000000', p.get('99.00000', 0)) / 1000
+print(f'{bw:.1f} {iops:.0f} {lat_mean:.1f} {lat_p99:.1f}')
+" "$1"
+}
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TIMESTAMP="$(date -Iseconds)"
@@ -93,7 +100,7 @@ for NJOBS in 1 2 4 8 16; do
         --rw=read \
         --bs=128k \
         --direct=1 \
-        --ioengine=libaio \
+        --ioengine=posixaio \
         --iodepth=16 \
         --numjobs="${NJOBS}" \
         --group_reporting \
@@ -106,18 +113,12 @@ for NJOBS in 1 2 4 8 16; do
             continue
         }
 
-    if [ "$HAS_JQ" -eq 1 ]; then
-        AGG_BW=$(jq '.jobs[0].read.bw / 1024' "$FIO_OUT" 2>/dev/null || echo "0")
-        AGG_IOPS=$(jq '.jobs[0].read.iops' "$FIO_OUT" 2>/dev/null || echo "0")
-        LAT_MEAN=$(jq '.jobs[0].read.clat_ns.mean / 1000' "$FIO_OUT" 2>/dev/null || echo "0")
-        LAT_P99=$(jq '.jobs[0].read.clat_ns.percentile["99.000000"] / 1000' "$FIO_OUT" 2>/dev/null || echo "0")
+    PARSED=$(parse_fio_json "$FIO_OUT") || { echo "  WARNING: failed to parse $FIO_OUT" >&2; continue; }
+    read -r AGG_BW AGG_IOPS LAT_MEAN LAT_P99 <<< "$PARSED"
 
-        printf "%s,%d,%.1f,%.0f,%.1f,%.1f\n" "$TIER" "$NJOBS" "$AGG_BW" "$AGG_IOPS" "$LAT_MEAN" "$LAT_P99" >> "$SUMMARY_CSV"
-        printf "  numjobs=%-2d  agg_read=%.1f MB/s  iops=%.0f  lat_mean=%.1f us  lat_p99=%.1f us\n" \
-            "$NJOBS" "$AGG_BW" "$AGG_IOPS" "$LAT_MEAN" "$LAT_P99"
-    else
-        echo "  (jq not available, raw JSON written to $FIO_OUT)"
-    fi
+    printf "%s,%d,%s,%s,%s,%s\n" "$TIER" "$NJOBS" "$AGG_BW" "$AGG_IOPS" "$LAT_MEAN" "$LAT_P99" >> "$SUMMARY_CSV"
+    printf "  numjobs=%-2d  agg_read=%s MB/s  iops=%s  lat_mean=%s us  lat_p99=%s us\n" \
+        "$NJOBS" "$AGG_BW" "$AGG_IOPS" "$LAT_MEAN" "$LAT_P99"
 done
 
 echo ""

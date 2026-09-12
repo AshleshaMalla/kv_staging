@@ -68,6 +68,7 @@ def main():
         device_map="cuda:0",
         attn_implementation="sdpa",
         trust_remote_code=True,
+        low_cpu_mem_usage=True,
     )
     model.eval()
 

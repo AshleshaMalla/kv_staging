@@ -1,0 +1,92 @@
+{
+  "timestamp": "2026-09-12T20:11:00.270467+00:00",
+  "model": "/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B",
+  "ref_length": 32768,
+  "reps": 3,
+  "warmup": 2,
+  "power_csv": "data/raw/gpu_power_config_sweep_20260912T200514Z.csv",
+  "configs": [
+    {
+      "config": "A_baseline_eager_chunk16k",
+      "llm_kwargs": {
+        "gpu_memory_utilization": "0.85",
+        "max_model_len": "131072",
+        "tensor_parallel_size": "1",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "True",
+        "max_num_batched_tokens": "16384"
+      },
+      "batch_size": 1,
+      "length": 32768,
+      "status": "ok",
+      "times_s": [
+        4.84981785598211,
+        4.849179571960121,
+        4.849519914016128
+      ],
+      "mean_time_s": 4.849505780652787,
+      "per_prompt_time_s": 4.849505780652787,
+      "total_tokens_per_sec": 6756.97720182718
+    },
+    {
+      "config": "B_compiled_chunk16k",
+      "llm_kwargs": {
+        "gpu_memory_utilization": "0.85",
+        "max_model_len": "131072",
+        "tensor_parallel_size": "1",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "False",
+        "max_num_batched_tokens": "16384"
+      },
+      "batch_size": 1,
+      "length": 32768,
+      "status": "ok",
+      "times_s": [
+        4.830976124154404,
+        4.826138129923493,
+        4.824326372006908
+      ],
+      "mean_time_s": 4.827146875361602,
+      "per_prompt_time_s": 4.827146875361602,
+      "total_tokens_per_sec": 6788.274905669894
+    },
+    {
+      "config": "C_compiled_unchunked",
+      "llm_kwargs": {
+        "gpu_memory_utilization": "0.85",
+        "max_model_len": "131072",
+        "tensor_parallel_size": "1",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "False",
+        "enable_chunked_prefill": "False",
+        "max_num_batched_tokens": "65536"
+      },
+      "batch_size": 1,
+      "length": 32768,
+      "status": "LOAD_FAILED: 1 validation error for SchedulerConfig\n  Value error, max_num_batched_tokens (65536) is smaller than max_model_len (131072). This effectively limits the maximum sequence length to max_num_batched_tokens and makes vLLM reject longer sequences. Please increase max_num_batched_tokens or decrease max_model_len. [type=value_error, input_value=ArgsKwargs((), {'runner_t..., 'stream_interval': 1}), input_type=ArgsKwargs]\n    For further information visit https://errors.pydantic.dev/2.13/v/value_error"
+    },
+    {
+      "config": "D_compiled_unchunked_batch4",
+      "llm_kwargs": {
+        "gpu_memory_utilization": "0.85",
+        "max_model_len": "131072",
+        "tensor_parallel_size": "1",
+        "enable_prefix_caching": "False",
+        "enforce_eager": "False",
+        "enable_chunked_prefill": "False",
+        "max_num_batched_tokens": "131072"
+      },
+      "batch_size": 4,
+      "length": 32768,
+      "status": "ok",
+      "times_s": [
+        19.0613607049454,
+        19.059453987982124,
+        19.060155184939504
+      ],
+      "mean_time_s": 19.060323292622343,
+      "per_prompt_time_s": 4.765080823155586,
+      "total_tokens_per_sec": 6876.693432095871
+    }
+  ]
+}

@@ -1,0 +1,352 @@
+Clock Lock Evidence — REPACSS H100 NVL Node rpg-93-4
+=====================================================
+Captured during Slurm job 154420, 2026-09-12
+
+SUMMARY
+-------
+All 4 GPUs (H100 NVL, 132 SMs each, 93.1 GiB HBM) have SM clocks pinned
+at 345 MHz — the minimum supported frequency. Max boost is 1785 MHz. No
+throttle reasons active other than GPU_IDLE. Applications Clocks are
+"deprecated" (H100 uses a different mechanism). User does not have
+permission to change clocks (nvidia-smi -rgc fails with permission error).
+Power limits are set to 400W (max), above the 310W default — so power is
+NOT the constraint. This is a clock lock, not a power cap.
+
+EVIDENCE
+--------
+
+--- nvidia-smi -q -d CLOCK (all 4 GPUs) ---
+
+==============NVSMI LOG==============
+
+Timestamp                                              : Sat Sep 12 16:07:09 2026
+Driver Version                                         : 610.43.02 [Deprecated; will be removed in CUDA 14.0. Use KMD Version instead]
+CUDA Version                                           : 13.3 [Deprecated; will be removed in CUDA 14.0. Use CUDA UMD Version instead]
+KMD Version                                            : 610.43.02
+CUDA UMD Version                                       : 13.3
+
+Attached GPUs                                          : 4
+GPU 00000000:4A:00.0
+    Clocks
+        Graphics                                       : 345 MHz
+        SM                                             : 345 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 765 MHz
+    Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Default Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Deferred Clocks
+        Memory                                         : N/A
+    Max Clocks
+        Graphics                                       : 1785 MHz
+        SM                                             : 1785 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 1410 MHz
+    Max Customer Boost Clocks
+        Graphics                                       : 1785 MHz
+    SM Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Memory Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Clock Policy
+        Auto Boost                                     : N/A
+        Auto Boost Default                             : N/A
+
+GPU 00000000:61:00.0
+    Clocks
+        Graphics                                       : 345 MHz
+        SM                                             : 345 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 765 MHz
+    Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Default Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Deferred Clocks
+        Memory                                         : N/A
+    Max Clocks
+        Graphics                                       : 1785 MHz
+        SM                                             : 1785 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 1410 MHz
+    Max Customer Boost Clocks
+        Graphics                                       : 1785 MHz
+    SM Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Memory Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Clock Policy
+        Auto Boost                                     : N/A
+        Auto Boost Default                             : N/A
+
+GPU 00000000:CA:00.0
+    Clocks
+        Graphics                                       : 345 MHz
+        SM                                             : 345 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 765 MHz
+    Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Default Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Deferred Clocks
+        Memory                                         : N/A
+    Max Clocks
+        Graphics                                       : 1785 MHz
+        SM                                             : 1785 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 1410 MHz
+    Max Customer Boost Clocks
+        Graphics                                       : 1785 MHz
+    SM Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Memory Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Clock Policy
+        Auto Boost                                     : N/A
+        Auto Boost Default                             : N/A
+
+GPU 00000000:E1:00.0
+    Clocks
+        Graphics                                       : 345 MHz
+        SM                                             : 345 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 765 MHz
+    Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Default Applications Clocks
+        Graphics                                       : Requested functionality has been deprecated
+        Memory                                         : Requested functionality has been deprecated
+    Deferred Clocks
+        Memory                                         : N/A
+    Max Clocks
+        Graphics                                       : 1785 MHz
+        SM                                             : 1785 MHz
+        Memory                                         : 2619 MHz
+        Video                                          : 1410 MHz
+    Max Customer Boost Clocks
+        Graphics                                       : 1785 MHz
+    SM Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Memory Clock Samples
+        Duration                                       : Not Found
+        Number of Samples                              : Not Found
+        Max                                            : Not Found
+        Min                                            : Not Found
+        Avg                                            : Not Found
+    Clock Policy
+        Auto Boost                                     : N/A
+        Auto Boost Default                             : N/A
+
+
+--- Throttle reasons (all 4 GPUs) ---
+index, clocks_event_reasons.active, clocks_event_reasons.gpu_idle, clocks_event_reasons.applications_clocks_setting, clocks_event_reasons.sw_power_cap, clocks_event_reasons.hw_slowdown, clocks_event_reasons.hw_thermal_slowdown, clocks_event_reasons.hw_power_brake_slowdown, clocks_event_reasons.sw_thermal_slowdown
+0, 0x0000000000000001, Active, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active
+1, 0x0000000000000001, Active, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active
+2, 0x0000000000000001, Active, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active
+3, 0x0000000000000001, Active, Not Active, Not Active, Not Active, Not Active, Not Active, Not Active
+
+--- nvidia-smi -q -d POWER (all 4 GPUs) ---
+
+==============NVSMI LOG==============
+
+Timestamp                                              : Sat Sep 12 16:07:10 2026
+Driver Version                                         : 610.43.02 [Deprecated; will be removed in CUDA 14.0. Use KMD Version instead]
+CUDA Version                                           : 13.3 [Deprecated; will be removed in CUDA 14.0. Use CUDA UMD Version instead]
+KMD Version                                            : 610.43.02
+CUDA UMD Version                                       : 13.3
+
+Attached GPUs                                          : 4
+GPU 00000000:4A:00.0
+    GPU Power Readings
+        Average Power Draw                             : 62.10 W
+        Instantaneous Power Draw                       : 62.17 W
+        GPU Ceiling Power Limit
+            Current Power Limit                        : 400.00 W
+            Requested Power Limit                      : 400.00 W
+            Default Power Limit                        : 310.00 W
+        GPU Base Power
+            Current Base Power                         : N/A
+            Requested Base Power                       : N/A
+            Default Base Power                         : N/A
+        Min Power Limit                                : 200.00 W
+        Max Power Limit                                : 400.00 W
+    Power Samples
+        Duration                                       : 2.36 sec
+        Number of Samples                              : 119
+        Max                                            : 62.75 W
+        Min                                            : 61.78 W
+        Avg                                            : 62.07 W
+    GPU Memory Power Readings 
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+    Module Power Readings
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+        Current Power Limit                            : N/A
+        Requested Power Limit                          : N/A
+        Default Power Limit                            : N/A
+        Min Power Limit                                : N/A
+        Max Power Limit                                : N/A
+    EDPp Multiplier                                    : 100.00%
+
+GPU 00000000:61:00.0
+    GPU Power Readings
+        Average Power Draw                             : 63.16 W
+        Instantaneous Power Draw                       : 63.12 W
+        GPU Ceiling Power Limit
+            Current Power Limit                        : 400.00 W
+            Requested Power Limit                      : 400.00 W
+            Default Power Limit                        : 310.00 W
+        GPU Base Power
+            Current Base Power                         : N/A
+            Requested Base Power                       : N/A
+            Default Base Power                         : N/A
+        Min Power Limit                                : 200.00 W
+        Max Power Limit                                : 400.00 W
+    Power Samples
+        Duration                                       : 2.36 sec
+        Number of Samples                              : 119
+        Max                                            : 63.41 W
+        Min                                            : 63.02 W
+        Avg                                            : 63.16 W
+    GPU Memory Power Readings 
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+    Module Power Readings
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+        Current Power Limit                            : N/A
+        Requested Power Limit                          : N/A
+        Default Power Limit                            : N/A
+        Min Power Limit                                : N/A
+        Max Power Limit                                : N/A
+    EDPp Multiplier                                    : 100.00%
+
+GPU 00000000:CA:00.0
+    GPU Power Readings
+        Average Power Draw                             : 64.46 W
+        Instantaneous Power Draw                       : 64.45 W
+        GPU Ceiling Power Limit
+            Current Power Limit                        : 400.00 W
+            Requested Power Limit                      : 400.00 W
+            Default Power Limit                        : 310.00 W
+        GPU Base Power
+            Current Base Power                         : N/A
+            Requested Base Power                       : N/A
+            Default Base Power                         : N/A
+        Min Power Limit                                : 200.00 W
+        Max Power Limit                                : 400.00 W
+    Power Samples
+        Duration                                       : 2.36 sec
+        Number of Samples                              : 119
+        Max                                            : 64.84 W
+        Min                                            : 63.77 W
+        Avg                                            : 64.46 W
+    GPU Memory Power Readings 
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+    Module Power Readings
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+        Current Power Limit                            : N/A
+        Requested Power Limit                          : N/A
+        Default Power Limit                            : N/A
+        Min Power Limit                                : N/A
+        Max Power Limit                                : N/A
+    EDPp Multiplier                                    : 100.00%
+
+GPU 00000000:E1:00.0
+    GPU Power Readings
+        Average Power Draw                             : 63.50 W
+        Instantaneous Power Draw                       : 63.47 W
+        GPU Ceiling Power Limit
+            Current Power Limit                        : 400.00 W
+            Requested Power Limit                      : 400.00 W
+            Default Power Limit                        : 310.00 W
+        GPU Base Power
+            Current Base Power                         : N/A
+            Requested Base Power                       : N/A
+            Default Base Power                         : N/A
+        Min Power Limit                                : 200.00 W
+        Max Power Limit                                : 400.00 W
+    Power Samples
+        Duration                                       : 2.36 sec
+        Number of Samples                              : 119
+        Max                                            : 63.86 W
+        Min                                            : 62.98 W
+        Avg                                            : 63.52 W
+    GPU Memory Power Readings 
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+    Module Power Readings
+        Average Power Draw                             : N/A
+        Instantaneous Power Draw                       : N/A
+        Current Power Limit                            : N/A
+        Requested Power Limit                          : N/A
+        Default Power Limit                            : N/A
+        Min Power Limit                                : N/A
+        Max Power Limit                                : N/A
+    EDPp Multiplier                                    : 100.00%
+
+
+
+--- GEMM benchmark at current clocks ---
+Test: 100 reps of bf16 16384x16384x16384 matmul on GPU 0
+Result: 178.5 TFLOP/s sustained, 49.3 ms per rep
+SM clock during sustained compute: 345 MHz (123 samples at 100ms, ALL at 345 MHz)
+Power during sustained compute: ~189W steady state
+Theoretical bf16 Tensor peak at 345 MHz (132 SMs, 4096 flops/SM/clock): 186.5 TFLOP/s
+Achieved/peak ratio: 95.7% — normal GEMM efficiency, no clock anomaly
+
+--- Affected GPUs ---
+ALL 4 GPUs are identically affected:
+  GPU 0 (4A:00.0): SM=345 MHz, Max=1785 MHz
+  GPU 1 (61:00.0): SM=345 MHz, Max=1785 MHz
+  GPU 2 (CA:00.0): SM=345 MHz, Max=1785 MHz
+  GPU 3 (E1:00.0): SM=345 MHz, Max=1785 MHz
+
+--- Power limits ---
+All 4 GPUs: Current=400W, Default=310W, Max=400W
+Power limit has been RAISED above default (400W > 310W default).
+The clock lock is NOT caused by a power cap.
+
+--- Permission check ---
+nvidia-smi -rgc: "The current user does not have permission to change clocks"
+Root/admin action required to unlock SM clocks.
