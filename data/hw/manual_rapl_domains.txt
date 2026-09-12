@@ -1,0 +1,7 @@
+enabled
+intel-rapl:0
+intel-rapl:1
+intel-rapl:2
+power
+subsystem
+uevent

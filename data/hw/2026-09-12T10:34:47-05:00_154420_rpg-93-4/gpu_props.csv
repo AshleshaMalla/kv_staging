@@ -1,0 +1,5 @@
+index, name, memory.total [MiB], power.limit [W], pcie.link.gen.current, pcie.link.width.current
+0, NVIDIA H100 NVL, 95830 MiB, 400.00 W, 5, 16
+1, NVIDIA H100 NVL, 95830 MiB, 400.00 W, 5, 16
+2, NVIDIA H100 NVL, 95830 MiB, 400.00 W, 5, 16
+3, NVIDIA H100 NVL, 95830 MiB, 400.00 W, 5, 16
