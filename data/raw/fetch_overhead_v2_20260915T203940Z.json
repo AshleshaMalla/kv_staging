@@ -1,0 +1,84 @@
+{
+  "timestamp": "20260915T203940Z",
+  "gpu": "NVIDIA H100 NVL",
+  "kv_bytes_per_token": 131072,
+  "o_direct": true,
+  "mechanism": "os.preadv into pinned torch tensor (O_DIRECT if available) + pinned .to(cuda)",
+  "cost_model": "fetch = T_read_into_pinned + H_to_gpu + M (no double counting)",
+  "reps": 15,
+  "results": [
+    {
+      "length": 4096,
+      "size_mb": 512.0,
+      "read_med_us": 182877.58016958833,
+      "read_per_tok_us": 44.6478467210909,
+      "read_gbps": 2.9356846886433106,
+      "h_med_us": 9671.062929555774,
+      "h_per_tok_us": 2.3610993480360776,
+      "h_gbps": 55.51312362566339,
+      "full_med_us": 195181.27897754312,
+      "full_per_tok_us": 47.65167943787674,
+      "full_gbps": 2.7506270827427586
+    },
+    {
+      "length": 8192,
+      "size_mb": 1024.0,
+      "read_med_us": 144461.73585020006,
+      "read_per_tok_us": 17.634489239526374,
+      "read_gbps": 7.432707475655831,
+      "h_med_us": 19346.95802628994,
+      "h_per_tok_us": 2.361689212193596,
+      "h_gbps": 55.499258464350206,
+      "full_med_us": 162520.71200869977,
+      "full_per_tok_us": 19.838954102624484,
+      "full_gbps": 6.606799900941379
+    },
+    {
+      "length": 16384,
+      "size_mb": 2048.0,
+      "read_med_us": 245689.07590582967,
+      "read_per_tok_us": 14.995671136830424,
+      "read_gbps": 8.740655806866686,
+      "h_med_us": 38776.159984990954,
+      "h_per_tok_us": 2.3667089834589206,
+      "h_gbps": 55.38154497070427,
+      "full_med_us": 285828.7841081619,
+      "full_per_tok_us": 17.44560449878918,
+      "full_gbps": 7.513181902587389
+    },
+    {
+      "length": 32768,
+      "size_mb": 4096.0,
+      "read_med_us": 1470484.3938816339,
+      "read_per_tok_us": 44.875622371876034,
+      "read_gbps": 2.920784004148855,
+      "h_med_us": 78408.20821002126,
+      "h_per_tok_us": 2.39282861969059,
+      "h_gbps": 54.7770111580112,
+      "full_med_us": 1547347.511863336,
+      "full_per_tok_us": 47.22129857981372,
+      "full_gbps": 2.775696644141654
+    },
+    {
+      "length": 65536,
+      "size_mb": 8192.0,
+      "read_med_us": 2942335.3048041463,
+      "read_per_tok_us": 44.89647376715311,
+      "read_gbps": 2.9194274962390057,
+      "h_med_us": 155007.56492838264,
+      "h_per_tok_us": 2.3652277363339635,
+      "h_gbps": 55.41622820775724,
+      "full_med_us": 3096895.1280228794,
+      "full_per_tok_us": 47.25486950718505,
+      "full_gbps": 2.7737247265082523
+    }
+  ],
+  "recommended": {
+    "read_us_per_tok": 30.600564128846486,
+    "read_gbps": 5.503393695727595,
+    "h_us_per_tok": 2.3716136379192676,
+    "h_gbps": 55.26851070020573,
+    "full_us_per_tok": 32.94018167210311,
+    "full_gbps": 4.917350793544669
+  }
+}

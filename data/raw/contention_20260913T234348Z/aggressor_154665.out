@@ -1,0 +1,21 @@
+Aggressor allocation: 64 nodes
+Nodes: rpc-91-[1-20],rpc-94-[1-4],rpc-96-[1-20],rpc-97-[1-20]
+Started: 2026-09-13T18:43:50-05:00
+Creating aggressor test files...
+Aggressor files ready
+Sleeping 59s until T0...
+T0 reached: 2026-09-13T18:54:51-05:00
+Cycle 1: sleeping 600s until load start (1 nodes)...
+Cycle 1: starting 1 aggressors at 2026-09-13T19:04:51-05:00
+Cycle 1: aggressors stopped at 2026-09-13T19:14:51-05:00
+Cycle 2: sleeping 900s until load start (4 nodes)...
+Cycle 2: starting 4 aggressors at 2026-09-13T19:29:51-05:00
+Cycle 2: aggressors stopped at 2026-09-13T19:39:51-05:00
+Cycle 3: sleeping 900s until load start (16 nodes)...
+Cycle 3: starting 16 aggressors at 2026-09-13T19:54:51-05:00
+Cycle 3: aggressors stopped at 2026-09-13T20:04:51-05:00
+Cycle 4: sleeping 900s until load start (64 nodes)...
+Cycle 4: starting 64 aggressors at 2026-09-13T20:19:51-05:00
+Cycle 4: aggressors stopped at 2026-09-13T20:29:51-05:00
+
+Aggressor job done: 2026-09-13T20:29:51-05:00

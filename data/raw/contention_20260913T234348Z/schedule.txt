@@ -1,0 +1,8 @@
+# Contention experiment schedule
+# Generated: 2026-09-13T18:43:49-05:00
+T0=1789343691
+# cycle  agg_nodes  quiet_start  load_start  load_stop  recover_stop
+1 1 300 600 1200 1800
+2 4 1800 2100 2700 3300
+3 16 3300 3600 4200 4800
+4 64 4800 5100 5700 6300

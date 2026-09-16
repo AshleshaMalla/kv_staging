@@ -1,0 +1,335 @@
+Victim node: rpg-93-1
+Started: 2026-09-13T18:43:50-05:00
+365953024 bytes (366 MB, 349 MiB) copied, 1 s, 365 MB/s729808896 bytes (730 MB, 696 MiB) copied, 2 s, 365 MB/s1094713344 bytes (1.1 GB, 1.0 GiB) copied, 3 s, 365 MB/s1458569216 bytes (1.5 GB, 1.4 GiB) copied, 4 s, 365 MB/s1822425088 bytes (1.8 GB, 1.7 GiB) copied, 5 s, 364 MB/s2186280960 bytes (2.2 GB, 2.0 GiB) copied, 6 s, 364 MB/s2550136832 bytes (2.6 GB, 2.4 GiB) copied, 7 s, 364 MB/s2913992704 bytes (2.9 GB, 2.7 GiB) copied, 8 s, 364 MB/s3277848576 bytes (3.3 GB, 3.1 GiB) copied, 9 s, 364 MB/s3605004288 bytes (3.6 GB, 3.4 GiB) copied, 10 s, 360 MB/s3945791488 bytes (3.9 GB, 3.7 GiB) copied, 11 s, 359 MB/s4308598784 bytes (4.3 GB, 4.0 GiB) copied, 12 s, 359 MB/s4672454656 bytes (4.7 GB, 4.4 GiB) copied, 13 s, 359 MB/s5036310528 bytes (5.0 GB, 4.7 GiB) copied, 14 s, 360 MB/s5400166400 bytes (5.4 GB, 5.0 GiB) copied, 15 s, 360 MB/s5670699008 bytes (5.7 GB, 5.3 GiB) copied, 16 s, 354 MB/s5953814528 bytes (6.0 GB, 5.5 GiB) copied, 17 s, 350 MB/s6253707264 bytes (6.3 GB, 5.8 GiB) copied, 18 s, 347 MB/s6617563136 bytes (6.6 GB, 6.2 GiB) copied, 19 s, 348 MB/s6981419008 bytes (7.0 GB, 6.5 GiB) copied, 20 s, 349 MB/s7345274880 bytes (7.3 GB, 6.8 GiB) copied, 21 s, 350 MB/s7708082176 bytes (7.7 GB, 7.2 GiB) copied, 22 s, 350 MB/s8071938048 bytes (8.1 GB, 7.5 GiB) copied, 23 s, 351 MB/s8434745344 bytes (8.4 GB, 7.9 GiB) copied, 24 s, 351 MB/s
+8192+0 records in
+8192+0 records out
+8589934592 bytes (8.6 GB, 8.0 GiB) copied, 25.9372 s, 331 MB/s
+Victim ready, waiting for T0...
+Sleeping 59s until T0...
+T0 reached: 2026-09-13T18:54:51-05:00
+#1    t=    0s quiet_0      agg=0     3567.3 MB/s p99=  2768.9 us
+#2    t=   21s quiet_0      agg=0     3824.3 MB/s p99=  2736.1 us
+#3    t=   41s quiet_0      agg=0     3820.4 MB/s p99=  2703.4 us
+#4    t=   62s quiet_0      agg=0     3809.0 MB/s p99=  2736.1 us
+#5    t=   82s quiet_0      agg=0     3822.8 MB/s p99=  2736.1 us
+#6    t=  103s quiet_0      agg=0     3841.8 MB/s p99=  2768.9 us
+#7    t=  123s quiet_0      agg=0     3835.7 MB/s p99=  2736.1 us
+#8    t=  143s quiet_0      agg=0     3825.4 MB/s p99=  2736.1 us
+#9    t=  164s quiet_0      agg=0     3838.4 MB/s p99=  2768.9 us
+#10   t=  184s quiet_0      agg=0     3788.5 MB/s p99=  2801.7 us
+#11   t=  205s quiet_0      agg=0     3814.1 MB/s p99=  2768.9 us
+#12   t=  225s quiet_0      agg=0     3818.6 MB/s p99=  2768.9 us
+#13   t=  246s quiet_0      agg=0     3806.8 MB/s p99=  2768.9 us
+#14   t=  266s quiet_0      agg=0     3800.4 MB/s p99=  2736.1 us
+#15   t=  286s quiet_0      agg=0     3834.2 MB/s p99=  2768.9 us
+#16   t=  307s quiet_1      agg=1     3835.2 MB/s p99=  2768.9 us
+#17   t=  327s quiet_1      agg=1     3848.4 MB/s p99=  2703.4 us
+#18   t=  348s quiet_1      agg=1     3819.6 MB/s p99=  2736.1 us
+#19   t=  368s quiet_1      agg=1     3803.8 MB/s p99=  2736.1 us
+#20   t=  388s quiet_1      agg=1     3843.3 MB/s p99=  2703.4 us
+#21   t=  409s quiet_1      agg=1     3834.4 MB/s p99=  2703.4 us
+#22   t=  429s quiet_1      agg=1     3837.3 MB/s p99=  2736.1 us
+#23   t=  450s quiet_1      agg=1     3706.6 MB/s p99=  2801.7 us
+#24   t=  470s quiet_1      agg=1     3798.0 MB/s p99=  2768.9 us
+#25   t=  491s quiet_1      agg=1     3846.9 MB/s p99=  2736.1 us
+#26   t=  511s quiet_1      agg=1     3818.0 MB/s p99=  2768.9 us
+#27   t=  531s quiet_1      agg=1     3855.7 MB/s p99=  2736.1 us
+#28   t=  552s quiet_1      agg=1     3857.1 MB/s p99=  2736.1 us
+#29   t=  572s quiet_1      agg=1     3809.2 MB/s p99=  2768.9 us
+#30   t=  593s quiet_1      agg=1     3813.2 MB/s p99=  2768.9 us
+#31   t=  613s load_1       agg=1     3820.8 MB/s p99=  2736.1 us
+#32   t=  634s load_1       agg=1     3831.9 MB/s p99=  2736.1 us
+#33   t=  654s load_1       agg=1     3827.0 MB/s p99=  2768.9 us
+#34   t=  674s load_1       agg=1     3811.0 MB/s p99=  2768.9 us
+#35   t=  695s load_1       agg=1     3823.0 MB/s p99=  2703.4 us
+#36   t=  715s load_1       agg=1     3811.6 MB/s p99=  2768.9 us
+#37   t=  736s load_1       agg=1     3739.0 MB/s p99=  2801.7 us
+#38   t=  756s load_1       agg=1     3783.5 MB/s p99=  2768.9 us
+#39   t=  777s load_1       agg=1     3778.5 MB/s p99=  2768.9 us
+#40   t=  797s load_1       agg=1     3720.1 MB/s p99=  2801.7 us
+#41   t=  817s load_1       agg=1     3809.2 MB/s p99=  2736.1 us
+#42   t=  838s load_1       agg=1     3808.8 MB/s p99=  2768.9 us
+#43   t=  858s load_1       agg=1     3788.0 MB/s p99=  2801.7 us
+#44   t=  879s load_1       agg=1     3798.8 MB/s p99=  2768.9 us
+#45   t=  899s load_1       agg=1     3819.2 MB/s p99=  2768.9 us
+#46   t=  919s load_1       agg=1     3765.4 MB/s p99=  2768.9 us
+#47   t=  940s load_1       agg=1     3778.1 MB/s p99=  2768.9 us
+#48   t=  960s load_1       agg=1     3780.5 MB/s p99=  2768.9 us
+#49   t=  981s load_1       agg=1     3749.8 MB/s p99=  2801.7 us
+#50   t= 1001s load_1       agg=1     3790.2 MB/s p99=  2768.9 us
+#51   t= 1022s load_1       agg=1     3824.0 MB/s p99=  2703.4 us
+#52   t= 1042s load_1       agg=1     3778.5 MB/s p99=  2801.7 us
+#53   t= 1062s load_1       agg=1     3774.6 MB/s p99=  2768.9 us
+#54   t= 1083s load_1       agg=1     3809.4 MB/s p99=  2736.1 us
+#55   t= 1103s load_1       agg=1     3808.4 MB/s p99=  2768.9 us
+#56   t= 1124s load_1       agg=1     3791.2 MB/s p99=  2768.9 us
+#57   t= 1144s load_1       agg=1     3790.1 MB/s p99=  2801.7 us
+#58   t= 1165s load_1       agg=1     3813.4 MB/s p99=  2736.1 us
+#59   t= 1185s load_1       agg=1     3788.0 MB/s p99=  2736.1 us
+#60   t= 1205s recover_1    agg=1     3813.4 MB/s p99=  2736.1 us
+#61   t= 1226s recover_1    agg=1     3790.9 MB/s p99=  2801.7 us
+#62   t= 1246s recover_1    agg=1     3798.6 MB/s p99=  2768.9 us
+#63   t= 1267s recover_1    agg=1     3774.5 MB/s p99=  2801.7 us
+#64   t= 1287s recover_1    agg=1     3810.7 MB/s p99=  2736.1 us
+#65   t= 1308s recover_1    agg=1     3794.3 MB/s p99=  2768.9 us
+#66   t= 1328s recover_1    agg=1     3753.6 MB/s p99=  2834.4 us
+#67   t= 1348s recover_1    agg=1     3807.6 MB/s p99=  2768.9 us
+#68   t= 1369s recover_1    agg=1     3785.4 MB/s p99=  2768.9 us
+#69   t= 1389s recover_1    agg=1     3799.4 MB/s p99=  2736.1 us
+#70   t= 1410s recover_1    agg=1     3828.5 MB/s p99=  2736.1 us
+#71   t= 1430s recover_1    agg=1     3816.4 MB/s p99=  2736.1 us
+#72   t= 1450s recover_1    agg=1     3801.4 MB/s p99=  2768.9 us
+#73   t= 1471s recover_1    agg=1     3789.3 MB/s p99=  2768.9 us
+#74   t= 1491s recover_1    agg=1     3836.7 MB/s p99=  2736.1 us
+#75   t= 1512s recover_1    agg=1     3793.0 MB/s p99=  2801.7 us
+#76   t= 1532s recover_1    agg=1     3806.1 MB/s p99=  2768.9 us
+#77   t= 1553s recover_1    agg=1     3822.9 MB/s p99=  2768.9 us
+#78   t= 1573s recover_1    agg=1     3707.0 MB/s p99=  2834.4 us
+#79   t= 1593s recover_1    agg=1     3701.4 MB/s p99=  2834.4 us
+#80   t= 1614s recover_1    agg=1     3715.5 MB/s p99=  2834.4 us
+#81   t= 1634s recover_1    agg=1     3810.1 MB/s p99=  2768.9 us
+#82   t= 1655s recover_1    agg=1     3790.0 MB/s p99=  2768.9 us
+#83   t= 1675s recover_1    agg=1     3789.4 MB/s p99=  2768.9 us
+#84   t= 1696s recover_1    agg=1     3761.2 MB/s p99=  2801.7 us
+#85   t= 1716s recover_1    agg=1     3735.4 MB/s p99=  2768.9 us
+#86   t= 1736s recover_1    agg=1     3800.9 MB/s p99=  2768.9 us
+#87   t= 1757s recover_1    agg=1     3814.1 MB/s p99=  2736.1 us
+#88   t= 1777s recover_1    agg=1     3802.5 MB/s p99=  2736.1 us
+#89   t= 1798s recover_1    agg=1     3794.0 MB/s p99=  2801.7 us
+#90   t= 1818s quiet_2      agg=4     3799.3 MB/s p99=  2801.7 us
+#91   t= 1838s quiet_2      agg=4     3781.2 MB/s p99=  2801.7 us
+#92   t= 1859s quiet_2      agg=4     3811.9 MB/s p99=  2736.1 us
+#93   t= 1879s quiet_2      agg=4     3815.9 MB/s p99=  2736.1 us
+#94   t= 1900s quiet_2      agg=4     3825.1 MB/s p99=  2736.1 us
+#95   t= 1920s quiet_2      agg=4     3781.3 MB/s p99=  2801.7 us
+#96   t= 1941s quiet_2      agg=4     3796.0 MB/s p99=  2736.1 us
+#97   t= 1961s quiet_2      agg=4     3803.7 MB/s p99=  2768.9 us
+#98   t= 1981s quiet_2      agg=4     3798.5 MB/s p99=  2801.7 us
+#99   t= 2002s quiet_2      agg=4     3815.2 MB/s p99=  2736.1 us
+#100  t= 2022s quiet_2      agg=4     3811.7 MB/s p99=  2768.9 us
+#101  t= 2043s quiet_2      agg=4     3804.2 MB/s p99=  2768.9 us
+#102  t= 2063s quiet_2      agg=4     3841.0 MB/s p99=  2703.4 us
+#103  t= 2084s quiet_2      agg=4     3798.6 MB/s p99=  2736.1 us
+#104  t= 2104s load_2       agg=4     3800.9 MB/s p99=  2736.1 us
+#105  t= 2124s load_2       agg=4     3819.3 MB/s p99=  2768.9 us
+#106  t= 2145s load_2       agg=4     3869.1 MB/s p99=  2703.4 us
+#107  t= 2165s load_2       agg=4     3822.1 MB/s p99=  2736.1 us
+#108  t= 2186s load_2       agg=4     3866.5 MB/s p99=  2703.4 us
+#109  t= 2206s load_2       agg=4     3864.6 MB/s p99=  2703.4 us
+#110  t= 2227s load_2       agg=4     3910.4 MB/s p99=  2703.4 us
+#111  t= 2247s load_2       agg=4     3876.3 MB/s p99=  2703.4 us
+#112  t= 2267s load_2       agg=4     3813.2 MB/s p99=  2703.4 us
+#113  t= 2288s load_2       agg=4     3875.8 MB/s p99=  2670.6 us
+#114  t= 2308s load_2       agg=4     3869.3 MB/s p99=  2703.4 us
+#115  t= 2329s load_2       agg=4     3802.8 MB/s p99=  2736.1 us
+#116  t= 2349s load_2       agg=4     3825.9 MB/s p99=  2768.9 us
+#117  t= 2369s load_2       agg=4     3802.2 MB/s p99=  2768.9 us
+#118  t= 2390s load_2       agg=4     3813.2 MB/s p99=  2768.9 us
+#119  t= 2410s load_2       agg=4     3804.5 MB/s p99=  2768.9 us
+#120  t= 2431s load_2       agg=4     3815.1 MB/s p99=  2703.4 us
+#121  t= 2451s load_2       agg=4     3792.2 MB/s p99=  2736.1 us
+#122  t= 2472s load_2       agg=4     3794.8 MB/s p99=  2768.9 us
+#123  t= 2492s load_2       agg=4     3840.0 MB/s p99=  2768.9 us
+#124  t= 2512s load_2       agg=4     3818.8 MB/s p99=  2736.1 us
+#125  t= 2533s load_2       agg=4     3787.7 MB/s p99=  2768.9 us
+#126  t= 2553s load_2       agg=4     3874.1 MB/s p99=  2736.1 us
+#127  t= 2574s load_2       agg=4     3846.0 MB/s p99=  2736.1 us
+#128  t= 2594s load_2       agg=4     3830.9 MB/s p99=  2736.1 us
+#129  t= 2615s load_2       agg=4     3816.0 MB/s p99=  2703.4 us
+#130  t= 2635s load_2       agg=4     3857.6 MB/s p99=  2736.1 us
+#131  t= 2655s load_2       agg=4     3837.4 MB/s p99=  2736.1 us
+#132  t= 2676s load_2       agg=4     3829.9 MB/s p99=  2736.1 us
+#133  t= 2696s load_2       agg=4     3809.8 MB/s p99=  2736.1 us
+#134  t= 2717s recover_2    agg=4     3821.8 MB/s p99=  2703.4 us
+#135  t= 2737s recover_2    agg=4     3787.6 MB/s p99=  2768.9 us
+#136  t= 2758s recover_2    agg=4     3794.2 MB/s p99=  2768.9 us
+#137  t= 2778s recover_2    agg=4     3814.5 MB/s p99=  2736.1 us
+#138  t= 2798s recover_2    agg=4     3819.0 MB/s p99=  2736.1 us
+#139  t= 2819s recover_2    agg=4     3792.8 MB/s p99=  2736.1 us
+#140  t= 2839s recover_2    agg=4     3809.6 MB/s p99=  2736.1 us
+#141  t= 2860s recover_2    agg=4     3784.4 MB/s p99=  2768.9 us
+#142  t= 2880s recover_2    agg=4     3801.0 MB/s p99=  2768.9 us
+#143  t= 2900s recover_2    agg=4     3813.1 MB/s p99=  2736.1 us
+#144  t= 2921s recover_2    agg=4     3808.8 MB/s p99=  2736.1 us
+#145  t= 2941s recover_2    agg=4     3810.5 MB/s p99=  2768.9 us
+#146  t= 2962s recover_2    agg=4     3830.3 MB/s p99=  2736.1 us
+#147  t= 2982s recover_2    agg=4     3887.3 MB/s p99=  2703.4 us
+#148  t= 3003s recover_2    agg=4     3865.0 MB/s p99=  2736.1 us
+#149  t= 3023s recover_2    agg=4     3776.3 MB/s p99=  2768.9 us
+#150  t= 3043s recover_2    agg=4     3803.2 MB/s p99=  2768.9 us
+#151  t= 3064s recover_2    agg=4     3802.9 MB/s p99=  2768.9 us
+#152  t= 3084s recover_2    agg=4     3818.6 MB/s p99=  2736.1 us
+#153  t= 3105s recover_2    agg=4     3863.3 MB/s p99=  2703.4 us
+#154  t= 3125s recover_2    agg=4     3827.7 MB/s p99=  2736.1 us
+#155  t= 3146s recover_2    agg=4     3832.6 MB/s p99=  2736.1 us
+#156  t= 3166s recover_2    agg=4     3797.8 MB/s p99=  2768.9 us
+#157  t= 3186s recover_2    agg=4     3789.2 MB/s p99=  2768.9 us
+#158  t= 3207s recover_2    agg=4     3802.5 MB/s p99=  2768.9 us
+#159  t= 3227s recover_2    agg=4     3756.2 MB/s p99=  2768.9 us
+#160  t= 3248s recover_2    agg=4     3816.7 MB/s p99=  2768.9 us
+#161  t= 3268s recover_2    agg=4     3835.1 MB/s p99=  2736.1 us
+#162  t= 3288s recover_2    agg=4     3827.0 MB/s p99=  2703.4 us
+#163  t= 3309s quiet_3      agg=16    3836.7 MB/s p99=  2736.1 us
+#164  t= 3329s quiet_3      agg=16    3819.2 MB/s p99=  2736.1 us
+#165  t= 3350s quiet_3      agg=16    3790.3 MB/s p99=  2768.9 us
+#166  t= 3370s quiet_3      agg=16    3788.3 MB/s p99=  2736.1 us
+#167  t= 3391s quiet_3      agg=16    3782.1 MB/s p99=  2801.7 us
+#168  t= 3411s quiet_3      agg=16    3819.5 MB/s p99=  2736.1 us
+#169  t= 3431s quiet_3      agg=16    3780.0 MB/s p99=  2768.9 us
+#170  t= 3452s quiet_3      agg=16    3812.7 MB/s p99=  2703.4 us
+#171  t= 3472s quiet_3      agg=16    3828.3 MB/s p99=  2736.1 us
+#172  t= 3493s quiet_3      agg=16    3837.5 MB/s p99=  2736.1 us
+#173  t= 3513s quiet_3      agg=16    3845.0 MB/s p99=  2703.4 us
+#174  t= 3534s quiet_3      agg=16    3791.8 MB/s p99=  2768.9 us
+#175  t= 3554s quiet_3      agg=16    3796.6 MB/s p99=  2768.9 us
+#176  t= 3574s quiet_3      agg=16    3840.0 MB/s p99=  2768.9 us
+#177  t= 3595s quiet_3      agg=16    3716.1 MB/s p99=  2834.4 us
+#178  t= 3615s load_3       agg=16    3828.9 MB/s p99=  2736.1 us
+#179  t= 3636s load_3       agg=16    3805.6 MB/s p99=  2768.9 us
+#180  t= 3656s load_3       agg=16    3822.2 MB/s p99=  2768.9 us
+#181  t= 3677s load_3       agg=16    3750.3 MB/s p99=  2834.4 us
+#182  t= 3697s load_3       agg=16    3838.1 MB/s p99=  2736.1 us
+#183  t= 3717s load_3       agg=16    3806.0 MB/s p99=  2768.9 us
+#184  t= 3738s load_3       agg=16    3813.2 MB/s p99=  2736.1 us
+#185  t= 3758s load_3       agg=16    3790.9 MB/s p99=  2768.9 us
+#186  t= 3779s load_3       agg=16    3797.3 MB/s p99=  2736.1 us
+#187  t= 3799s load_3       agg=16    3806.7 MB/s p99=  2736.1 us
+#188  t= 3819s load_3       agg=16    3804.5 MB/s p99=  2768.9 us
+#189  t= 3840s load_3       agg=16    3857.2 MB/s p99=  2768.9 us
+#190  t= 3860s load_3       agg=16    3819.9 MB/s p99=  2768.9 us
+#191  t= 3881s load_3       agg=16    3838.9 MB/s p99=  2736.1 us
+#192  t= 3901s load_3       agg=16    3817.3 MB/s p99=  2736.1 us
+#193  t= 3922s load_3       agg=16    3797.1 MB/s p99=  2736.1 us
+#194  t= 3942s load_3       agg=16    3770.4 MB/s p99=  2768.9 us
+#195  t= 3962s load_3       agg=16    3804.6 MB/s p99=  2768.9 us
+#196  t= 3983s load_3       agg=16    3808.3 MB/s p99=  2768.9 us
+#197  t= 4003s load_3       agg=16    3839.7 MB/s p99=  2703.4 us
+#198  t= 4024s load_3       agg=16    3839.8 MB/s p99=  2768.9 us
+#199  t= 4044s load_3       agg=16    3811.7 MB/s p99=  2736.1 us
+#200  t= 4065s load_3       agg=16    3822.0 MB/s p99=  2736.1 us
+#201  t= 4085s load_3       agg=16    3782.2 MB/s p99=  2768.9 us
+#202  t= 4105s load_3       agg=16    3829.5 MB/s p99=  2703.4 us
+#203  t= 4126s load_3       agg=16    3786.7 MB/s p99=  2768.9 us
+#204  t= 4146s load_3       agg=16    3724.6 MB/s p99=  2834.4 us
+#205  t= 4167s load_3       agg=16    3802.8 MB/s p99=  2768.9 us
+#206  t= 4187s load_3       agg=16    3839.9 MB/s p99=  2703.4 us
+#207  t= 4207s recover_3    agg=16    3822.4 MB/s p99=  2736.1 us
+#208  t= 4228s recover_3    agg=16    3843.1 MB/s p99=  2703.4 us
+#209  t= 4248s recover_3    agg=16    3803.7 MB/s p99=  2703.4 us
+#210  t= 4269s recover_3    agg=16    3807.4 MB/s p99=  2736.1 us
+#211  t= 4289s recover_3    agg=16    3832.0 MB/s p99=  2768.9 us
+#212  t= 4310s recover_3    agg=16    3847.3 MB/s p99=  2736.1 us
+#213  t= 4330s recover_3    agg=16    3801.1 MB/s p99=  2768.9 us
+#214  t= 4350s recover_3    agg=16    3835.1 MB/s p99=  2736.1 us
+#215  t= 4371s recover_3    agg=16    3810.5 MB/s p99=  2736.1 us
+#216  t= 4391s recover_3    agg=16    3831.0 MB/s p99=  2736.1 us
+#217  t= 4412s recover_3    agg=16    3829.4 MB/s p99=  2801.7 us
+#218  t= 4432s recover_3    agg=16    3816.8 MB/s p99=  2736.1 us
+#219  t= 4453s recover_3    agg=16    3815.3 MB/s p99=  2768.9 us
+#220  t= 4473s recover_3    agg=16    3806.4 MB/s p99=  2736.1 us
+#221  t= 4493s recover_3    agg=16    3831.5 MB/s p99=  2768.9 us
+#222  t= 4514s recover_3    agg=16    3793.4 MB/s p99=  2768.9 us
+#223  t= 4534s recover_3    agg=16    3845.5 MB/s p99=  2768.9 us
+#224  t= 4555s recover_3    agg=16    3804.3 MB/s p99=  2736.1 us
+#225  t= 4575s recover_3    agg=16    3737.5 MB/s p99=  2801.7 us
+#226  t= 4596s recover_3    agg=16    3772.4 MB/s p99=  2768.9 us
+#227  t= 4616s recover_3    agg=16    3814.3 MB/s p99=  2736.1 us
+#228  t= 4636s recover_3    agg=16    3720.2 MB/s p99=  2834.4 us
+#229  t= 4657s recover_3    agg=16    3806.8 MB/s p99=  2768.9 us
+#230  t= 4677s recover_3    agg=16    3844.2 MB/s p99=  2736.1 us
+#231  t= 4698s recover_3    agg=16    3838.2 MB/s p99=  2736.1 us
+#232  t= 4718s recover_3    agg=16    3818.2 MB/s p99=  2768.9 us
+#233  t= 4738s recover_3    agg=16    3756.9 MB/s p99=  2801.7 us
+#234  t= 4759s recover_3    agg=16    3817.9 MB/s p99=  2736.1 us
+#235  t= 4779s recover_3    agg=16    3838.1 MB/s p99=  2768.9 us
+#236  t= 4800s quiet_4      agg=64    3828.7 MB/s p99=  2703.4 us
+#237  t= 4820s quiet_4      agg=64    3817.3 MB/s p99=  2736.1 us
+#238  t= 4841s quiet_4      agg=64    3826.2 MB/s p99=  2768.9 us
+#239  t= 4861s quiet_4      agg=64    3806.1 MB/s p99=  2768.9 us
+#240  t= 4881s quiet_4      agg=64    3813.7 MB/s p99=  2736.1 us
+#241  t= 4902s quiet_4      agg=64    3807.2 MB/s p99=  2768.9 us
+#242  t= 4922s quiet_4      agg=64    3826.8 MB/s p99=  2736.1 us
+#243  t= 4943s quiet_4      agg=64    3765.5 MB/s p99=  2768.9 us
+#244  t= 4963s quiet_4      agg=64    3830.8 MB/s p99=  2736.1 us
+#245  t= 4984s quiet_4      agg=64    3801.7 MB/s p99=  2768.9 us
+#246  t= 5004s quiet_4      agg=64    3840.9 MB/s p99=  2703.4 us
+#247  t= 5024s quiet_4      agg=64    3770.0 MB/s p99=  2801.7 us
+#248  t= 5045s quiet_4      agg=64    3757.8 MB/s p99=  2768.9 us
+#249  t= 5065s quiet_4      agg=64    3828.5 MB/s p99=  2736.1 us
+#250  t= 5086s quiet_4      agg=64    3807.3 MB/s p99=  2736.1 us
+#251  t= 5106s load_4       agg=64    3815.7 MB/s p99=  2768.9 us
+#252  t= 5127s load_4       agg=64    3777.7 MB/s p99=  2768.9 us
+#253  t= 5147s load_4       agg=64    3821.1 MB/s p99=  2736.1 us
+#254  t= 5167s load_4       agg=64    3846.7 MB/s p99=  2768.9 us
+#255  t= 5188s load_4       agg=64    3824.7 MB/s p99=  2736.1 us
+#256  t= 5208s load_4       agg=64    3798.2 MB/s p99=  2768.9 us
+#257  t= 5229s load_4       agg=64    3732.0 MB/s p99=  2801.7 us
+#258  t= 5249s load_4       agg=64    3832.6 MB/s p99=  2736.1 us
+#259  t= 5269s load_4       agg=64    3800.2 MB/s p99=  2736.1 us
+#260  t= 5290s load_4       agg=64    3796.6 MB/s p99=  2736.1 us
+#261  t= 5310s load_4       agg=64    3799.1 MB/s p99=  2736.1 us
+#262  t= 5331s load_4       agg=64    3792.2 MB/s p99=  2768.9 us
+#263  t= 5351s load_4       agg=64    3845.5 MB/s p99=  2736.1 us
+#264  t= 5372s load_4       agg=64    3826.5 MB/s p99=  2768.9 us
+#265  t= 5392s load_4       agg=64    3798.6 MB/s p99=  2768.9 us
+#266  t= 5412s load_4       agg=64    3805.2 MB/s p99=  2736.1 us
+#267  t= 5433s load_4       agg=64    3840.5 MB/s p99=  2670.6 us
+#268  t= 5453s load_4       agg=64    3792.5 MB/s p99=  2736.1 us
+#269  t= 5474s load_4       agg=64    3825.5 MB/s p99=  2703.4 us
+#270  t= 5494s load_4       agg=64    3733.8 MB/s p99=  2801.7 us
+#271  t= 5515s load_4       agg=64    3806.7 MB/s p99=  2736.1 us
+#272  t= 5535s load_4       agg=64    3787.7 MB/s p99=  2768.9 us
+#273  t= 5555s load_4       agg=64    3836.1 MB/s p99=  2768.9 us
+#274  t= 5576s load_4       agg=64    3800.0 MB/s p99=  2768.9 us
+#275  t= 5596s load_4       agg=64    3856.8 MB/s p99=  2703.4 us
+#276  t= 5617s load_4       agg=64    3863.3 MB/s p99=  2703.4 us
+#277  t= 5637s load_4       agg=64    3813.7 MB/s p99=  2768.9 us
+#278  t= 5658s load_4       agg=64    3837.2 MB/s p99=  2736.1 us
+#279  t= 5678s load_4       agg=64    3688.2 MB/s p99=  2834.4 us
+#280  t= 5698s load_4       agg=64    3744.6 MB/s p99=  2834.4 us
+#281  t= 5719s recover_4    agg=64    3784.1 MB/s p99=  2768.9 us
+#282  t= 5739s recover_4    agg=64    3808.9 MB/s p99=  2736.1 us
+#283  t= 5760s recover_4    agg=64    3828.1 MB/s p99=  2736.1 us
+#284  t= 5780s recover_4    agg=64    3822.9 MB/s p99=  2736.1 us
+#285  t= 5801s recover_4    agg=64    3859.6 MB/s p99=  2703.4 us
+#286  t= 5821s recover_4    agg=64    3774.6 MB/s p99=  2768.9 us
+#287  t= 5841s recover_4    agg=64    3791.0 MB/s p99=  2801.7 us
+#288  t= 5862s recover_4    agg=64    3723.9 MB/s p99=  2801.7 us
+#289  t= 5882s recover_4    agg=64    3850.7 MB/s p99=  2703.4 us
+#290  t= 5903s recover_4    agg=64    3811.3 MB/s p99=  2736.1 us
+#291  t= 5923s recover_4    agg=64    3814.7 MB/s p99=  2736.1 us
+#292  t= 5943s recover_4    agg=64    3865.0 MB/s p99=  2703.4 us
+#293  t= 5964s recover_4    agg=64    3818.6 MB/s p99=  2768.9 us
+#294  t= 5984s recover_4    agg=64    3797.9 MB/s p99=  2768.9 us
+#295  t= 6005s recover_4    agg=64    3800.9 MB/s p99=  2768.9 us
+#296  t= 6025s recover_4    agg=64    3802.0 MB/s p99=  2736.1 us
+#297  t= 6046s recover_4    agg=64    3810.8 MB/s p99=  2736.1 us
+#298  t= 6066s recover_4    agg=64    3785.2 MB/s p99=  2768.9 us
+#299  t= 6086s recover_4    agg=64    3819.1 MB/s p99=  2736.1 us
+#300  t= 6107s recover_4    agg=64    3785.0 MB/s p99=  2768.9 us
+#301  t= 6127s recover_4    agg=64    3803.0 MB/s p99=  2736.1 us
+#302  t= 6148s recover_4    agg=64    3811.2 MB/s p99=  2736.1 us
+#303  t= 6168s recover_4    agg=64    3838.1 MB/s p99=  2736.1 us
+#304  t= 6189s recover_4    agg=64    3805.5 MB/s p99=  2736.1 us
+#305  t= 6209s recover_4    agg=64    3841.1 MB/s p99=  2736.1 us
+#306  t= 6229s recover_4    agg=64    3812.4 MB/s p99=  2768.9 us
+#307  t= 6250s recover_4    agg=64    3828.4 MB/s p99=  2736.1 us
+#308  t= 6270s recover_4    agg=64    3783.6 MB/s p99=  2768.9 us
+#309  t= 6291s recover_4    agg=64    3804.1 MB/s p99=  2736.1 us
+#310  t= 6311s quiet_0      agg=0     3849.2 MB/s p99=  2768.9 us
+#311  t= 6331s quiet_0      agg=0     3833.4 MB/s p99=  2736.1 us
+#312  t= 6352s quiet_0      agg=0     3783.8 MB/s p99=  2768.9 us
+#313  t= 6372s quiet_0      agg=0     3819.7 MB/s p99=  2768.9 us
+#314  t= 6393s quiet_0      agg=0     3816.3 MB/s p99=  2736.1 us
+#315  t= 6413s quiet_0      agg=0     3794.6 MB/s p99=  2801.7 us
+#316  t= 6434s quiet_0      agg=0     3854.8 MB/s p99=  2736.1 us
+#317  t= 6454s quiet_0      agg=0     3881.7 MB/s p99=  2703.4 us
+#318  t= 6474s quiet_0      agg=0     3819.4 MB/s p99=  2736.1 us
+#319  t= 6495s quiet_0      agg=0     3819.1 MB/s p99=  2768.9 us
+#320  t= 6515s quiet_0      agg=0     3797.3 MB/s p99=  2768.9 us
+#321  t= 6536s quiet_0      agg=0     3775.3 MB/s p99=  2768.9 us
+#322  t= 6556s quiet_0      agg=0     3861.7 MB/s p99=  2736.1 us
+#323  t= 6577s quiet_0      agg=0     3836.6 MB/s p99=  2768.9 us
+#324  t= 6597s quiet_0      agg=0     3819.7 MB/s p99=  2768.9 us
+
+Victim done: 2026-09-13T20:45:08-05:00, 324 samples

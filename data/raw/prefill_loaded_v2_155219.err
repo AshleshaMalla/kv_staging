@@ -1,0 +1,31 @@
+(EngineCore pid=1773981) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(EngineCore pid=1773981) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:02<00:06,  2.29s/it]
+(EngineCore pid=1773981) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:03<00:02,  1.42s/it]
+(EngineCore pid=1773981) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:03<00:01,  1.14s/it]
+(EngineCore pid=1773981) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:04<00:00,  1.28it/s]
+(EngineCore pid=1773981) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:04<00:00,  1.04s/it]
+(EngineCore pid=1773981) 
+(EngineCore pid=1773981) 2026-09-16 00:30:44,236 - INFO - autotuner.py:2789 - flashinfer.jit: [Autotuner]: Loaded 0 configs from /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/d1a334254ef8422aecee348dc8c9dbe9c553e466146be52fb67dbb53995924e8/autotune_configs.json
+(EngineCore pid=1773981) 2026-09-16 00:30:44,236 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=1773981) 2026-09-16 00:30:44,268 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=1773981) 2026-09-16 00:30:44,394 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/d1a334254ef8422aecee348dc8c9dbe9c553e466146be52fb67dbb53995924e8/autotune_configs.json (0 new, 0 from previous config)
+(EngineCore pid=1775794) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(EngineCore pid=1775794) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:00<00:02,  1.21it/s]
+(EngineCore pid=1775794) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:01<00:01,  1.23it/s]
+(EngineCore pid=1775794) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:02<00:00,  1.25it/s]
+(EngineCore pid=1775794) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.73it/s]
+(EngineCore pid=1775794) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.51it/s]
+(EngineCore pid=1775794) 
+(EngineCore pid=1775794) 2026-09-16 00:47:29,403 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=1775794) 2026-09-16 00:47:29,435 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=1775794) 2026-09-16 00:47:29,565 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/9e5b7cbb22a0b7427b9ec9bc238ed8b2d72ef2ab52db9c6025309c1e38ed8a33/autotune_configs.json (0 new, 0 from previous config)
+(EngineCore pid=1777289) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(EngineCore pid=1777289) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:00<00:02,  1.25it/s]
+(EngineCore pid=1777289) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:01<00:01,  1.26it/s]
+(EngineCore pid=1777289) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:02<00:00,  1.28it/s]
+(EngineCore pid=1777289) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.76it/s]
+(EngineCore pid=1777289) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:02<00:00,  1.54it/s]
+(EngineCore pid=1777289) 
+(EngineCore pid=1777289) 2026-09-16 01:04:25,498 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=1777289) 2026-09-16 01:04:25,532 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=1777289) 2026-09-16 01:04:25,665 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/c634391609a7a986c7874598f50eb9ef785f8f7d58ec4f4315969da3171fa4eb/autotune_configs.json (0 new, 0 from previous config)

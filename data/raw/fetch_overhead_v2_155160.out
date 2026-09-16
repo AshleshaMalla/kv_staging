@@ -1,0 +1,85 @@
+Node: rpg-93-3
+GPU: NVIDIA H100 NVL, 345 MHz
+Memory: 503 GB
+
+======================================================================
+CORRECTED KV-CACHE FETCH OVERHEAD (v2)
+======================================================================
+GPU: NVIDIA H100 NVL
+KV bytes/token: 131072
+Target: /mnt/REPACSS/asmalla/fetch_overhead_v2
+Reps: 15
+
+Cost model: fetch = T_read_into_pinned + H_to_gpu + M
+  T_read_into_pinned: single read from NFS into pinned CUDA host buffer
+  H_to_gpu: pinned .to('cuda', non_blocking=True) with synchronize
+  M: metadata (open/stat/close), negligible
+  No double counting: T_svc and D are the same operation.
+
+O_DIRECT: supported — will bypass page cache (matches fio --direct=1)
+
+--- L=4096 (512 MB) ---
+  Creating 512 MB test file...
+  T_read_into_pinned:     182878 us  (44.65 us/tok)  implied 2.94 GB/s
+  H_to_gpu (pinned):       9671 us  (2.36 us/tok)  implied 55.51 GB/s
+  Full (read+H2D):       195181 us  (47.65 us/tok)  implied 2.75 GB/s
+
+--- L=8192 (1024 MB) ---
+  Creating 1024 MB test file...
+  T_read_into_pinned:     144462 us  (17.63 us/tok)  implied 7.43 GB/s
+  H_to_gpu (pinned):      19347 us  (2.36 us/tok)  implied 55.50 GB/s
+  Full (read+H2D):       162521 us  (19.84 us/tok)  implied 6.61 GB/s
+
+--- L=16384 (2048 MB) ---
+  Creating 2048 MB test file...
+  T_read_into_pinned:     245689 us  (15.00 us/tok)  implied 8.74 GB/s
+  H_to_gpu (pinned):      38776 us  (2.37 us/tok)  implied 55.38 GB/s
+  Full (read+H2D):       285829 us  (17.45 us/tok)  implied 7.51 GB/s
+
+--- L=32768 (4096 MB) ---
+  Creating 4096 MB test file...
+  T_read_into_pinned:    1470484 us  (44.88 us/tok)  implied 2.92 GB/s
+  H_to_gpu (pinned):      78408 us  (2.39 us/tok)  implied 54.78 GB/s
+  Full (read+H2D):      1547348 us  (47.22 us/tok)  implied 2.78 GB/s
+
+--- L=65536 (8192 MB) ---
+  Creating 8192 MB test file...
+  T_read_into_pinned:    2942335 us  (44.90 us/tok)  implied 2.92 GB/s
+  H_to_gpu (pinned):     155008 us  (2.37 us/tok)  implied 55.42 GB/s
+  Full (read+H2D):      3096895 us  (47.25 us/tok)  implied 2.77 GB/s
+
+======================================================================
+SUMMARY
+======================================================================
+    Length      Size   Read us/tok   Read GB/s    H us/tok    H GB/s   Full us/tok   Full GB/s
+      4096     512MB         44.65        2.94        2.36     55.51         47.65        2.75
+      8192    1024MB         17.63        7.43        2.36     55.50         19.84        6.61
+     16384    2048MB         15.00        8.74        2.37     55.38         17.45        7.51
+     32768    4096MB         44.88        2.92        2.39     54.78         47.22        2.78
+     65536    8192MB         44.90        2.92        2.37     55.42         47.25        2.77
+
+  Recommended coefficients (mean for L>=8192):
+    T_read_into_pinned: 30.60 us/tok  (3.0601e-05 s/tok)  @ 5.50 GB/s
+    H_to_gpu:           2.37 us/tok  (2.3716e-06 s/tok)  @ 55.27 GB/s
+    Full pipeline:      32.94 us/tok  (3.2940e-05 s/tok)  @ 4.92 GB/s
+
+======================================================================
+SANITY CHECKS
+======================================================================
+  Page cache: files written then fadvise DONTNEED before each read.
+  O_DIRECT: YES — kernel page cache fully bypassed (matches fio --direct=1)
+  Read BW (5.5 GB/s) within fio range (2.6-6.0 GB/s). Good.
+  H2D BW (55.3 GB/s) in expected PCIe Gen5 range. Good.
+
+======================================================================
+COMPARISON: v1 (separate D+T_svc) vs v2 (single read-into-pinned)
+======================================================================
+  v1 D (bytearray read):    65.0 us/tok  (2.02 GB/s)
+  v2 T_read_into_pinned:    30.6 us/tok  (5.50 GB/s)
+  v1 H (pinned, same):      2.7 us/tok
+  v2 H (pinned, same):      2.4 us/tok
+  v1 D+H:                   67.7 us/tok
+  v2 full pipeline:         32.9 us/tok
+  Note: v1 also double-counted T_svc + D; v2 measures the single operation.
+
+Results saved to /mnt/REPACSS/home/asmalla/kv_staging/data/raw/fetch_overhead_v2_20260915T203940Z.json

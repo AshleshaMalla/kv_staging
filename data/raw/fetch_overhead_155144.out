@@ -1,0 +1,82 @@
+Node: rpg-93-5
+GPU: NVIDIA H100 NVL, 795 MHz
+Memory: 503 GB
+
+======================================================================
+REALISTIC KV-CACHE FETCH OVERHEAD MEASUREMENT
+======================================================================
+GPU: NVIDIA H100 NVL
+KV bytes/token: 131072
+Target: /mnt/REPACSS/asmalla/fetch_overhead_test
+Reps: 15
+
+Mechanism assumptions (matching production KV cache systems):
+  D: os.preadv into pre-allocated bytearray (no pickle, no deserialization)
+  H: pinned-memory .to('cuda', non_blocking=True) with synchronize
+  Pin allocation measured separately (one-time cost, pool-amortized)
+
+--- L=2048 (256 MB) ---
+  Creating 256 MB test file...
+  D (raw read):         110130 us total  (53.77 us/tok)  implied 2.44 GB/s
+  H (pinned H2D):         4837 us total  (2.36 us/tok)  implied 55.49 GB/s
+  Pin alloc:                15 us (one-time)
+  D+H total:        56.14 us/tok = 5.6137e-05 s/tok
+
+--- L=4096 (512 MB) ---
+  Creating 512 MB test file...
+  D (raw read):         247448 us total  (60.41 us/tok)  implied 2.17 GB/s
+  H (pinned H2D):        12188 us total  (2.98 us/tok)  implied 44.05 GB/s
+  Pin alloc:                13 us (one-time)
+  D+H total:        63.39 us/tok = 6.3388e-05 s/tok
+
+--- L=8192 (1024 MB) ---
+  Creating 1024 MB test file...
+  D (raw read):         543709 us total  (66.37 us/tok)  implied 1.97 GB/s
+  H (pinned H2D):        19317 us total  (2.36 us/tok)  implied 55.59 GB/s
+  Pin alloc:                12 us (one-time)
+  D+H total:        68.73 us/tok = 6.8729e-05 s/tok
+
+--- L=16384 (2048 MB) ---
+  Creating 2048 MB test file...
+  D (raw read):         994543 us total  (60.70 us/tok)  implied 2.16 GB/s
+  H (pinned H2D):        48633 us total  (2.97 us/tok)  implied 44.16 GB/s
+  Pin alloc:                13 us (one-time)
+  D+H total:        63.67 us/tok = 6.3670e-05 s/tok
+
+--- L=32768 (4096 MB) ---
+  Creating 4096 MB test file...
+  D (raw read):        2029726 us total  (61.94 us/tok)  implied 2.12 GB/s
+  H (pinned H2D):        77275 us total  (2.36 us/tok)  implied 55.58 GB/s
+  Pin alloc:                11 us (one-time)
+  D+H total:        64.30 us/tok = 6.4301e-05 s/tok
+
+--- L=65536 (8192 MB) ---
+  Creating 8192 MB test file...
+  D (raw read):        4647367 us total  (70.91 us/tok)  implied 1.85 GB/s
+  H (pinned H2D):       211343 us total  (3.22 us/tok)  implied 40.64 GB/s
+  Pin alloc:                10 us (one-time)
+  D+H total:        74.14 us/tok = 7.4138e-05 s/tok
+
+======================================================================
+SUMMARY
+======================================================================
+    Length      Size    D us/tok    D GB/s    H us/tok    H GB/s    D+H us/tok     D+H s/tok
+      2048     256MB       53.77      2.44        2.36     55.49         56.14    5.6137e-05
+      4096     512MB       60.41      2.17        2.98     44.05         63.39    6.3388e-05
+      8192    1024MB       66.37      1.97        2.36     55.59         68.73    6.8729e-05
+     16384    2048MB       60.70      2.16        2.97     44.16         63.67    6.3670e-05
+     32768    4096MB       61.94      2.12        2.36     55.58         64.30    6.4301e-05
+     65536    8192MB       70.91      1.85        3.22     40.64         74.14    7.4138e-05
+
+  Recommended coefficients (mean for L>=8192):
+    D:   64.98 us/tok  (6.4982e-05 s/tok)  implied 2.02 GB/s
+    H:   2.73 us/tok  (2.7274e-06 s/tok)  implied 48.99 GB/s
+    D+H: 67.71 us/tok  (6.7709e-05 s/tok)
+
+======================================================================
+SANITY CHECKS
+======================================================================
+  D implied bandwidth (2.0 GB/s) is within measured fio range (2.6-6.0 GB/s). Plausible.
+  H implied bandwidth (49.0 GB/s) is in expected pinned PCIe Gen5 range (40-60 GB/s). Good.
+
+Results saved to /mnt/REPACSS/home/asmalla/kv_staging/data/raw/fetch_overhead_20260915T201815Z.json

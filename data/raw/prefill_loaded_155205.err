@@ -1,0 +1,10 @@
+(EngineCore pid=1753278) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(EngineCore pid=1753278) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:04<00:13,  4.54s/it]
+(EngineCore pid=1753278) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:05<00:04,  2.39s/it]
+(EngineCore pid=1753278) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:06<00:01,  1.67s/it]
+(EngineCore pid=1753278) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:06<00:00,  1.12s/it]
+(EngineCore pid=1753278) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:06<00:00,  1.63s/it]
+(EngineCore pid=1753278) 
+(EngineCore pid=1753278) 2026-09-15 20:55:42,770 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=1753278) 2026-09-15 20:55:42,802 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=1753278) 2026-09-15 20:55:42,960 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/d1a334254ef8422aecee348dc8c9dbe9c553e466146be52fb67dbb53995924e8/autotune_configs.json (0 new, 0 from previous config)

@@ -1,0 +1,371 @@
+{
+  "model": "/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B",
+  "engine": "vllm",
+  "vllm_version": "0.29.0",
+  "torch_version": "2.13.0+cu130",
+  "vllm_config": {
+    "enable_prefix_caching": false,
+    "gpu_memory_utilization": 0.9,
+    "max_model_len": 131072,
+    "tensor_parallel_size": 1,
+    "enforce_eager": true
+  },
+  "kv_bytes_per_token": 131072,
+  "reps": 3,
+  "warmup": 1,
+  "timestamp": "2026-09-16T01:57:34.018550+00:00",
+  "clock_csv": "data/raw/gpu_clocks_loaded_20260916T015521Z.csv",
+  "measurements": [
+    {
+      "length": 2048,
+      "concurrency": 1,
+      "total_tokens": 2048,
+      "wall_times_s": [
+        0.07157930894754827,
+        0.07137441006489098,
+        0.07063710386864841
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.07119694096036255,
+      "per_request_s": 0.07119694096036255,
+      "throughput_tok_per_s": 28765.280816491573
+    },
+    {
+      "length": 2048,
+      "concurrency": 2,
+      "total_tokens": 4096,
+      "wall_times_s": [
+        0.13558539794757962,
+        0.1340257371775806,
+        0.13558484707027674
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.13506532739847898,
+      "per_request_s": 0.06753266369923949,
+      "throughput_tok_per_s": 30326.06575568947
+    },
+    {
+      "length": 2048,
+      "concurrency": 4,
+      "total_tokens": 8192,
+      "wall_times_s": [
+        0.28854058613069355,
+        0.2679229478817433,
+        0.2727366820909083
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.2764000720344484,
+      "per_request_s": 0.0691000180086121,
+      "throughput_tok_per_s": 29638.197775067918
+    },
+    {
+      "length": 2048,
+      "concurrency": 8,
+      "total_tokens": 16384,
+      "wall_times_s": [
+        0.5524503660853952,
+        0.5733289199415594,
+        0.5500247508753091
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.5586013456340879,
+      "per_request_s": 0.06982516820426099,
+      "throughput_tok_per_s": 29330.398374536584
+    },
+    {
+      "length": 2048,
+      "concurrency": 16,
+      "total_tokens": 32768,
+      "wall_times_s": [
+        1.1131528248079121,
+        1.1116222979035228,
+        1.1244650301523507
+      ],
+      "status": "ok",
+      "mean_wall_s": 1.1164133842879285,
+      "per_request_s": 0.06977583651799553,
+      "throughput_tok_per_s": 29351.13503758297
+    },
+    {
+      "length": 4096,
+      "concurrency": 1,
+      "total_tokens": 4096,
+      "wall_times_s": [
+        0.13780375197529793,
+        0.13961946009658277,
+        0.14416803093627095
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.14053041433605054,
+      "per_request_s": 0.14053041433605054,
+      "throughput_tok_per_s": 29146.715459083687
+    },
+    {
+      "length": 4096,
+      "concurrency": 2,
+      "total_tokens": 8192,
+      "wall_times_s": [
+        0.2908701610285789,
+        0.2775505550671369,
+        0.2944496071431786
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.28762344107963145,
+      "per_request_s": 0.14381172053981572,
+      "throughput_tok_per_s": 28481.68413968722
+    },
+    {
+      "length": 4096,
+      "concurrency": 4,
+      "total_tokens": 16384,
+      "wall_times_s": [
+        0.5832624339964241,
+        0.5815347752068192,
+        0.5671831909567118
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.5773268000533184,
+      "per_request_s": 0.1443317000133296,
+      "throughput_tok_per_s": 28379.074033089877
+    },
+    {
+      "length": 4096,
+      "concurrency": 8,
+      "total_tokens": 32768,
+      "wall_times_s": [
+        1.152190465014428,
+        1.1552406300324947,
+        1.155557795893401
+      ],
+      "status": "ok",
+      "mean_wall_s": 1.1543296303134412,
+      "per_request_s": 0.14429120378918014,
+      "throughput_tok_per_s": 28387.038796797005
+    },
+    {
+      "length": 4096,
+      "concurrency": 16,
+      "total_tokens": 65536,
+      "wall_times_s": [
+        2.318120313808322,
+        2.32745129102841,
+        2.3194776920136064
+      ],
+      "status": "ok",
+      "mean_wall_s": 2.3216830989501127,
+      "per_request_s": 0.14510519368438204,
+      "throughput_tok_per_s": 28227.7973379037
+    },
+    {
+      "length": 8192,
+      "concurrency": 1,
+      "total_tokens": 8192,
+      "wall_times_s": [
+        0.3118352279998362,
+        0.31485489499755204,
+        0.310726375086233
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.31247216602787375,
+      "per_request_s": 0.31247216602787375,
+      "throughput_tok_per_s": 26216.735090796028
+    },
+    {
+      "length": 8192,
+      "concurrency": 2,
+      "total_tokens": 16384,
+      "wall_times_s": [
+        0.6148913491051644,
+        0.6198589419946074,
+        0.6150621171109378
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.6166041360702366,
+      "per_request_s": 0.3083020680351183,
+      "throughput_tok_per_s": 26571.34300852909
+    },
+    {
+      "length": 8192,
+      "concurrency": 4,
+      "total_tokens": 32768,
+      "wall_times_s": [
+        1.2418795600533485,
+        1.251511205919087,
+        1.2475434690713882
+      ],
+      "status": "ok",
+      "mean_wall_s": 1.2469780783479412,
+      "per_request_s": 0.3117445195869853,
+      "throughput_tok_per_s": 26277.927871364573
+    },
+    {
+      "length": 8192,
+      "concurrency": 8,
+      "total_tokens": 65536,
+      "wall_times_s": [
+        2.54046735400334,
+        2.5267329178750515,
+        2.5293150970246643
+      ],
+      "status": "ok",
+      "mean_wall_s": 2.532171789634352,
+      "per_request_s": 0.316521473704294,
+      "throughput_tok_per_s": 25881.340384675663
+    },
+    {
+      "length": 8192,
+      "concurrency": 16,
+      "total_tokens": 131072,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 16384,
+      "concurrency": 1,
+      "total_tokens": 16384,
+      "wall_times_s": [
+        0.6935048489831388,
+        0.6871259429026395,
+        0.6991359489038587
+      ],
+      "status": "ok",
+      "mean_wall_s": 0.6932555802632123,
+      "per_request_s": 0.6932555802632123,
+      "throughput_tok_per_s": 23633.419573455714
+    },
+    {
+      "length": 16384,
+      "concurrency": 2,
+      "total_tokens": 32768,
+      "wall_times_s": [
+        1.3678532929625362,
+        1.3841208119411021,
+        1.3831419120542705
+      ],
+      "status": "ok",
+      "mean_wall_s": 1.3783720056526363,
+      "per_request_s": 0.6891860028263181,
+      "throughput_tok_per_s": 23772.972655872312
+    },
+    {
+      "length": 16384,
+      "concurrency": 4,
+      "total_tokens": 65536,
+      "wall_times_s": [
+        2.755571434041485,
+        2.782323847990483,
+        2.7709974811878055
+      ],
+      "status": "ok",
+      "mean_wall_s": 2.769630921073258,
+      "per_request_s": 0.6924077302683145,
+      "throughput_tok_per_s": 23662.358584083177
+    },
+    {
+      "length": 16384,
+      "concurrency": 8,
+      "total_tokens": 131072,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 16384,
+      "concurrency": 16,
+      "total_tokens": 262144,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 32768,
+      "concurrency": 1,
+      "total_tokens": 32768,
+      "wall_times_s": [
+        1.697604866931215,
+        1.6694469158537686,
+        1.6822601940948516
+      ],
+      "status": "ok",
+      "mean_wall_s": 1.6831039922932785,
+      "per_request_s": 1.6831039922932785,
+      "throughput_tok_per_s": 19468.79108482931
+    },
+    {
+      "length": 32768,
+      "concurrency": 2,
+      "total_tokens": 65536,
+      "wall_times_s": [
+        3.3388155209831893,
+        3.3457510902080685,
+        3.336906666867435
+      ],
+      "status": "ok",
+      "mean_wall_s": 3.340491092686231,
+      "per_request_s": 1.6702455463431154,
+      "throughput_tok_per_s": 19618.672279499995
+    },
+    {
+      "length": 32768,
+      "concurrency": 4,
+      "total_tokens": 131072,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 32768,
+      "concurrency": 8,
+      "total_tokens": 262144,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 32768,
+      "concurrency": 16,
+      "total_tokens": 524288,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 65536,
+      "concurrency": 1,
+      "total_tokens": 65536,
+      "wall_times_s": [
+        4.58466301811859,
+        4.586158497957513,
+        4.572129163192585
+      ],
+      "status": "ok",
+      "mean_wall_s": 4.58098355975623,
+      "per_request_s": 4.58098355975623,
+      "throughput_tok_per_s": 14306.098056262705
+    },
+    {
+      "length": 65536,
+      "concurrency": 2,
+      "total_tokens": 131072,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 65536,
+      "concurrency": 4,
+      "total_tokens": 262144,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 65536,
+      "concurrency": 8,
+      "total_tokens": 524288,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    },
+    {
+      "length": 65536,
+      "concurrency": 16,
+      "total_tokens": 1048576,
+      "wall_times_s": [],
+      "status": "ERROR: Token id 131081 is out of vocabulary"
+    }
+  ],
+  "end_timestamp": "2026-09-16T01:59:19.546728+00:00"
+}

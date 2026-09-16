@@ -45,13 +45,20 @@ hardware:
     source: "data/hw/clock_lock_evidence_2026-09-12T16:07:09-05:00.txt"
     script: "scripts/hw_snapshot.sh"
     date: "2026-09-12"
-    note: "All 4 GPUs locked at minimum SM clock (345 of 1785 MHz max). Confirmed with 100ms sampling during sustained GEMM. User lacks permission to change. Blocks all prefill measurements as a ceiling estimate."
+    note: "HISTORICAL — clocks were locked at 345 MHz on 2026-09-12. Fixed by admin by 2026-09-15."
   sm_clock_max_mhz:
     value: 1785
     units: "MHz"
     source: "data/hw/clock_lock_evidence_2026-09-12T16:07:09-05:00.txt"
     script: "scripts/hw_snapshot.sh"
     date: "2026-09-12"
+  sm_clock_boosted_mhz:
+    value: 1785
+    units: "MHz"
+    source: "data/raw/prefill_20260915T180751Z.json"
+    script: "scripts/prefill_sweep.py"
+    date: "2026-09-15"
+    note: "Confirmed boosting to 1785 MHz under load via nvidia-smi after admin fix. 1785 is the max for H100 NVL."
 
 model:
   name:
@@ -105,20 +112,57 @@ model:
     date: "2026-09-12"
 
 bandwidth:
+  # Observed bandwidth states — reported individually, NOT as a mean.
+  # These represent distinct operating regimes of the storage backend.
+  hammerspace_degraded_mbps:
+    value: 1400
+    units: "MB/s"
+    source: "data/raw/bw_multinode_20260913T195637Z/summary_per_node.csv"
+    script: "scripts/bw_multinode.sh"
+    date: "2026-09-13"
+    note: "Spontaneous degradation during multinode rep 2 (4 nodes). All nodes dropped uniformly to ~1400 MB/s. Suspected external tenant load — not reproducible by read-only aggressor injection."
+  hammerspace_quiescent_mbps:
+    value: 2588
+    units: "MB/s"
+    source: "data/raw/bw_timeseries_20260913T211736Z/timeseries.csv"
+    script: "scripts/bw_timeseries.sh"
+    date: "2026-09-13"
+    note: "103-minute quiescent baseline. CV=0.65%, 305 samples. posixaio, 128k, direct=1, iodepth=16, 4 jobs."
+  hammerspace_quiet_evening_mbps:
+    value: 3806
+    units: "MB/s"
+    source: "data/raw/contention_20260913T234348Z/victim_timeseries.csv"
+    script: "scripts/contention_experiment.sh"
+    date: "2026-09-13"
+    note: "Quiet phase during contention experiment (Saturday evening). Same fio config as quiescent baseline."
+  hammerspace_peak_1stream_mbps:
+    value: 4993
+    units: "MB/s"
+    source: "data/raw/bw_posixaio_sweep_20260913T202840Z/summary.csv"
+    script: "scripts/bw_engine_compare.sh"
+    date: "2026-09-13"
+    note: "posixaio, 1 job, 8G files, 30s runtime. Best single-stream result observed."
+  hammerspace_peak_multistream_mbps:
+    value: 5998
+    units: "MB/s"
+    source: "data/raw/bw_posixaio_sweep_20260913T202840Z/summary.csv"
+    script: "scripts/bw_engine_compare.sh"
+    date: "2026-09-13"
+    note: "posixaio, 2 jobs, 8G files. Peak aggregate observed."
   hammerspace_1stream_mbps:
     value: 4420.4
     units: "MB/s"
     source: "data/raw/bw_shared_nfs_2026-09-12T11:15:22-05:00/summary.csv"
     script: "scripts/bw_sweep.sh"
     date: "2026-09-12"
-    note: "NFSv4.2 over IPoIB to Hammerspace, SHARED-SCRATCH volume, --direct=1, bs=128k"
+    note: "HISTORICAL — original libaio sweep with 1G files. Superseded by posixaio sweep but preserved for reference."
   hammerspace_8stream_mbps:
     value: 4399.3
     units: "MB/s"
     source: "data/raw/bw_shared_nfs_2026-09-12T11:15:22-05:00/summary.csv"
     script: "scripts/bw_sweep.sh"
     date: "2026-09-12"
-    note: "Bandwidth FLAT across 1-16 streams (4.4-4.8 GB/s). Not single-stream-limited — bottleneck is elsewhere."
+    note: "HISTORICAL — bandwidth flat across 1-16 streams (4.4-4.8 GB/s). Original libaio sweep."
   nvme_1stream_mbps:
     value: null
     units: "MB/s"
@@ -140,48 +184,100 @@ bandwidth:
     date: null
 
 prefill:
-  coeff_a_s_per_token:
+  # Clock-locked measurements (2026-09-12, SM at 345 MHz)
+  coeff_a_clock_locked_s_per_token:
     value: 1.3062e-04
     units: "s/token"
     source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
     date: "2026-09-12"
-    note: "HF transformers forward(), SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked"
-  coeff_b_s_per_token2:
+    note: "SUPERSEDED — HF transformers forward(), SM clocks locked at 345/1785 MHz. Lower bound only. See coeff_a_boosted for corrected value."
+  coeff_b_clock_locked_s_per_token2:
     value: 3.7269e-09
     units: "s/token^2"
     source: "data/raw/prefill_20260912T180723Z.json"
     script: "scripts/prefill_sweep.py"
     date: "2026-09-12"
-    note: "HF transformers forward(), SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked"
-  coeff_a_vllm_s_per_token:
-    value: null
+    note: "SUPERSEDED — HF transformers forward(), SM clocks locked at 345/1785 MHz. Lower bound only. See coeff_b_boosted for corrected value."
+  # Boosted-clock measurements (2026-09-15, HF transformers)
+  # CAUTION: No clock log for this run. nvidia-smi snapshot showed 1785 MHz
+  # but that is the transient peak. Under sustained compute, H100 NVL power-limits
+  # to ~960-1035 MHz at ~400W (confirmed by loaded v2 clock log). Short-length
+  # measurements (2K-8K, <0.4s) may have caught transient boost; long-length
+  # (64K-128K, 5-17s) certainly power-limited. Coefficients may mix clock states.
+  # SUPERSEDED by coeff_a_vllm_boosted / coeff_b_vllm_boosted for crossover analysis.
+  coeff_a_hf_boosted_s_per_token:
+    value: 3.4551e-05
     units: "s/token"
-    source: "data/raw/prefill_vllm_20260912T191052Z.json"
-    script: "scripts/prefill_sweep_vllm.py"
-    date: "2026-09-12"
-    note: "vLLM 0.29.0 with FlashAttention v3, SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked. Fit not yet computed — raw times available in source JSON."
-  coeff_b_vllm_s_per_token2:
-    value: null
+    source: "data/raw/prefill_20260915T180751Z.json"
+    script: "scripts/prefill_sweep.py"
+    date: "2026-09-15"
+    note: "HF transformers forward(), no FlashAttn. No clock log — clock state uncertain (see comment above). 15-18% slower than vLLM+FlashAttn v3 at matched lengths. SUPERSEDED by vLLM coefficients for crossover analysis."
+  coeff_b_hf_boosted_s_per_token2:
+    value: 7.5003e-10
     units: "s/token^2"
-    source: "data/raw/prefill_vllm_20260912T191052Z.json"
-    script: "scripts/prefill_sweep_vllm.py"
-    date: "2026-09-12"
-    note: "vLLM 0.29.0 with FlashAttention v3, SM clocks locked at 345/1785 MHz; lower bound on serving-grade prefill speed; must be re-measured after clocks are unlocked. Fit not yet computed — raw times available in source JSON."
-  fit_r2:
-    value: 1.0
+    source: "data/raw/prefill_20260915T180751Z.json"
+    script: "scripts/prefill_sweep.py"
+    date: "2026-09-15"
+    note: "HF transformers forward(), no FlashAttn. b is 27% higher than vLLM — combination of HF vs FlashAttn v3 attention and possible clock-state mixing across lengths. SUPERSEDED by vLLM coefficient."
+  fit_r2_hf_boosted:
+    value: 0.999859
     units: "dimensionless"
-    source: "data/raw/prefill_20260912T180723Z.json"
+    source: "data/raw/prefill_20260915T180751Z.json"
     script: "analysis/crossover.py"
-    date: "2026-09-12"
-    note: "HF sweep, T = a*L + b*L^2, 7 lengths from 2K-128K. SM clocks locked at 345/1785 MHz."
+    date: "2026-09-15"
+    note: "T = a*L + b*L^2 fit, 7 lengths 2K-128K, HF engine."
+  # ── vLLM loaded prefill (2026-09-16) ──
+  # AUTHORITATIVE coefficients for crossover analysis. Clock-logged.
+  # H100 NVL at 400W TDP: SM clocks power-limit to 960-1035 MHz under sustained
+  # compute (confirmed by 200ms-interval nvidia-smi log throughout run).
+  # Max boost 1785 MHz is a transient peak, NOT the sustained operating point.
+  # These coefficients are specific to:
+  #   - H100 NVL 94GB (400W TDP, PCIe form factor)
+  #   - Would be FASTER on H100 SXM (700W TDP, higher sustained clocks ~1.5-1.8x)
+  #   - vLLM 0.29.0, FlashAttention v3, enforce_eager, chunked prefill
+  coeff_a_vllm_s_per_token:
+    value: 3.5158e-05
+    units: "s/token"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "vLLM 0.29.0 + FlashAttn v3. SM clocks 960-1035 MHz sustained at ~400W (clock-logged). N=1 service time linear coefficient. THIS is the correct coefficient for crossover analysis."
+  coeff_b_vllm_s_per_token2:
+    value: 5.8979e-10
+    units: "s/token^2"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "vLLM 0.29.0 + FlashAttn v3. SM clocks 960-1035 MHz sustained at ~400W (clock-logged). N=1 service time quadratic coefficient. 21% lower than HF b — FlashAttn v3 attention scaling."
+  sm_clock_sustained_mhz:
+    value: "960-1035"
+    units: "MHz"
+    source: "data/raw/gpu_clocks_loaded_v2_20260916T053020Z.csv"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "Sustained SM clock under continuous prefill load. Power-limited at ~400W (H100 NVL TDP). 200ms sampling interval throughout run. NOT the 1785 MHz max boost — that is transient only."
+  queueing_model:
+    value: "T_last(N) ≈ N * T_service(1), ~15% batching benefit"
+    units: "string"
+    source: "data/raw/diagnose_batching_155248.out"
+    script: "scripts/diagnose_batching.py"
+    date: "2026-09-16"
+    note: "VERIFIED via diagnostic job 155248. Batching IS occurring — confirmed by AsyncLLMEngine test where all N=4 requests complete simultaneously (spread=0.0000s), not staggered. Ratio is 3.35-3.45x for N=4 (not 4.0x), showing ~15% batching benefit from amortized per-step overhead. But aggregate throughput is flat (compute-bound), so wall time still scales nearly linearly with N×L. Offline and async engines produce identical ratios — this is hardware behavior, not a benchmark artifact."
+  scheduler_artifact:
+    value: false
+    units: "boolean"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "Throughput invariant across max_num_batched_tokens 16384/32768/65536 (<2% variation). Saturation is hardware-bound, not a scheduler configuration artifact."
   achieved_tflops:
     value: 152
     units: "TFLOPS"
     source: "data/raw/prefill_config_sweep_20260912T200514Z.json"
     script: "scripts/prefill_config_sweep.py"
     date: "2026-09-12"
-    note: "vLLM at 32K tokens, SM clocks locked at 345/1785 MHz (95% of 186.5 TFLOP/s clock-adjusted peak). Must be re-measured after clocks are unlocked."
+    note: "STALE — measured at 345 MHz clock-lock. Not comparable to boosted measurements. Needs re-measurement with boosted clocks (sustained 960-1035 MHz)."
   max_context_fit_1gpu:
     value: 131072
     units: "tokens"
@@ -190,13 +286,215 @@ prefill:
     date: "2026-09-12"
     note: "HF sweep completed all lengths through 128K on 1x H100 NVL (63.3 GiB peak HBM of 93 GiB)"
 
+fetch_overhead:
+  metadata_open_stat_close_us:
+    value: 50
+    units: "us"
+    source: "inline measurement 2026-09-15"
+    script: "inline (python3, NFS open/fstat/close)"
+    date: "2026-09-15"
+    note: "NFS metadata per-file: open ~20us, fstat ~10us, close ~15us. Negligible per-token when amortized over a full KV cache read."
+
+  # ── Naive path (torch.load + pageable .cuda()) ──
+  # NOT representative of production KV cache systems. Kept for comparison.
+  # torch.load uses Python pickle: object graph deserialization, fresh CPU
+  # allocation, and copy. Pageable .cuda() goes through a driver bounce buffer.
+  # Real systems (LMCache, Mooncake, SGLang HiCache) use raw binary reads
+  # into pre-allocated pinned buffers with no deserialization.
+  naive_d_us_per_token:
+    value: 122.5
+    units: "us/token"
+    source: "inline measurement 2026-09-15"
+    script: "inline (torch.load, map_location=cpu)"
+    date: "2026-09-15"
+    note: "NAIVE PATH — NOT REPRESENTATIVE. torch.load (pickle) from NFS to CPU. Implied 1.07 GB/s — 3-5x slower than raw fio reads because this measures CPU deserialization overhead, not I/O. Superseded by realistic_d_us_per_token."
+  naive_h_us_per_token:
+    value: 12.8
+    units: "us/token"
+    source: "inline measurement 2026-09-15"
+    script: "inline (tensor.cuda(), torch.cuda.synchronize)"
+    date: "2026-09-15"
+    note: "NAIVE PATH — NOT REPRESENTATIVE. Pageable .cuda() transfer. Implied 10.2 GB/s — signature of driver bounce buffer. PCIe Gen5 x16 with pinned memory does 40-60 GB/s. Superseded by realistic_h_us_per_token."
+  naive_dh_us_per_token:
+    value: 135.3
+    units: "us/token"
+    source: "inline measurement 2026-09-15"
+    script: "inline"
+    date: "2026-09-15"
+    note: "NAIVE PATH — NOT REPRESENTATIVE. Sum of torch.load + pageable .cuda(). 2.0x higher than realistic path. The naive-vs-realistic delta (135.3 vs 67.7 us/tok) quantifies how much the loading mechanism matters relative to storage bandwidth."
+
+  # ── v1 realistic path (raw binary read into bytearray + pinned H2D) ──
+  # SUPERSEDED by v2. Double-counted T_svc and D as separate terms.
+  # Read into a Python bytearray (not pinned) at 2.0 GB/s, then measured
+  # H2D separately. Kept for the progression comparison.
+  v1_d_us_per_token:
+    value: 65.0
+    units: "us/token"
+    source: "data/raw/fetch_overhead_20260915T201815Z.json"
+    script: "scripts/measure_fetch_overhead.py"
+    date: "2026-09-15"
+    note: "SUPERSEDED by v2. os.preadv into Python bytearray (not pinned). Implied 2.02 GB/s. Double-counted with T_svc in crossover model."
+  v1_h_us_per_token:
+    value: 2.73
+    units: "us/token"
+    source: "data/raw/fetch_overhead_20260915T201815Z.json"
+    script: "scripts/measure_fetch_overhead.py"
+    date: "2026-09-15"
+    note: "SUPERSEDED by v2. Pinned .to('cuda'). Implied 49.0 GB/s. Correct mechanism but H2D was measured separately from read."
+  v1_dh_us_per_token:
+    value: 67.7
+    units: "us/token"
+    source: "data/raw/fetch_overhead_20260915T201815Z.json"
+    script: "scripts/measure_fetch_overhead.py"
+    date: "2026-09-15"
+    note: "SUPERSEDED by v2. D+H with double-counted T_svc. 2.0x higher than v2."
+
+  # ── v2 corrected path (single read-into-pinned + O_DIRECT + H2D) ──
+  # No double counting. T_read_into_pinned IS the full disk-to-host cost
+  # (replaces both T_svc and D from earlier models). Uses O_DIRECT to
+  # bypass page cache, matching fio --direct=1. Reads directly into a
+  # pinned CUDA host buffer — the same mechanism production KV cache
+  # systems use (LMCache, Mooncake, SGLang HiCache).
+  v2_read_into_pinned_us_per_token:
+    value: 44.9
+    units: "us/token"
+    source: "data/raw/fetch_overhead_v2_20260915T203940Z.json"
+    script: "scripts/measure_fetch_overhead_v2.py"
+    date: "2026-09-15"
+    note: "os.preadv with O_DIRECT into pinned torch tensor. Implied 2.92 GB/s at steady state (L>=32768). This IS the full disk-to-host cost — no separate T_svc term. Within fio-measured range (2.6-6.0 GB/s)."
+  v2_h_to_gpu_us_per_token:
+    value: 2.38
+    units: "us/token"
+    source: "data/raw/fetch_overhead_v2_20260915T203940Z.json"
+    script: "scripts/measure_fetch_overhead_v2.py"
+    date: "2026-09-15"
+    note: "Pinned .to('cuda', non_blocking=True). Implied 55.3 GB/s — PCIe Gen5 x16 range."
+  v2_full_pipeline_us_per_token:
+    value: 47.3
+    units: "us/token"
+    source: "data/raw/fetch_overhead_v2_20260915T203940Z.json"
+    script: "scripts/measure_fetch_overhead_v2.py"
+    date: "2026-09-15"
+    note: "Full pipeline: read-into-pinned + H2D, measured end-to-end. 4.73e-5 s/tok. 1.37x the prefill linear coefficient (3.46e-5). This is the correct overhead for the crossover model."
+  pin_alloc_us:
+    value: 12
+    units: "us"
+    source: "data/raw/fetch_overhead_v2_20260915T203940Z.json"
+    script: "scripts/measure_fetch_overhead_v2.py"
+    date: "2026-09-15"
+    note: "One-time cost of torch.empty(pin_memory=True). Amortized to zero in production systems using a pinned buffer pool."
+  queueing_us:
+    value: null
+    units: "us"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "NFS-side queueing: not directly measurable. GPU-side queueing: measured and modeled as Q(N) = (N-1) × service_time. This is the dominant queueing term — GPU serialization, not NFS, is the bottleneck."
+
+  # ── Overhead progression (the loading mechanism finding) ──
+  # The 3-step progression quantifies how much the fetch mechanism matters:
+  #   naive (torch.load + pageable):  135.3 us/tok  (3.9x prefill a)
+  #   v1 (bytearray + pinned, dbl):    67.7 us/tok  (2.0x prefill a)
+  #   v2 (pinned + O_DIRECT, single):  47.3 us/tok  (1.4x prefill a)
+  # Going from naive to v2 is a 2.9x reduction. The mechanism matters more
+  # than the storage bandwidth for files in the KV cache size range.
+
 crossover:
-  hammerspace_tokens:
+  # ── Stale HF-based crossover (2026-09-15) ──
+  # Used HF coefficients (a=3.4551e-5, b=7.5003e-10). SUPERSEDED by vLLM-based
+  # crossover below. Preserved for reference — the HF coefficients have no clock
+  # log and use a different attention implementation. See data/crossover_corrected.png.
+  hf_hammerspace_degraded_tokens:
+    value: 81941
+    units: "tokens"
+    source: "data/crossover_corrected.png"
+    script: "inline analysis 2026-09-15 (v2)"
+    date: "2026-09-15"
+    note: "STALE — used HF coefficients. Superseded by vLLM-based crossover (101K at degraded)."
+  hf_hammerspace_quiescent_tokens:
+    value: 24641
+    units: "tokens"
+    source: "data/crossover_corrected.png"
+    script: "inline analysis 2026-09-15 (v2)"
+    date: "2026-09-15"
+    note: "STALE — used HF coefficients. Superseded by vLLM-based crossover (30K at quiescent)."
+  hf_hammerspace_quiet_evening_tokens:
+    value: 3031
+    units: "tokens"
+    source: "data/crossover_corrected.png"
+    script: "inline analysis 2026-09-15 (v2)"
+    date: "2026-09-15"
+    note: "STALE — used HF coefficients. Superseded by vLLM-based crossover (2.8K at quiet evening)."
+  hf_verdict:
+    value: "STALE — replaced by vLLM-based crossover"
+    units: "string"
+    source: "data/crossover_phase_diagram.png"
+    script: "inline analysis 2026-09-15 (v2)"
+    date: "2026-09-15"
+    note: "Crossovers computed with HF a/b; shifted by ~20% when using vLLM coefficients with lower b (FlashAttn v3). See loaded_crossover below."
+
+  # ── Authoritative vLLM-based crossover (2026-09-16) ──
+  # Uses vLLM coefficients: a=3.5158e-5, b=5.8979e-10 (clock-logged, FlashAttn v3)
+  # Fetch cost: T_fetch(L) = (S/BW + H + M) × L  where S=131072, H=2.38e-6, M≈0
+  # Recompute: T_recompute_last(N,L) = N × (aL + bL²)
+  # L* = (fetch_per_tok/N - a) / b
+  # NOTE: The crossover for N>1 is PENDING VERIFICATION (see Correction 1 / job 155248).
+  # Q(N)=(N-1)×service might be a benchmark artifact of the offline LLM class.
+
+  # ── Loaded crossover (with queueing, 2026-09-16) ──
+  # For the LAST request in a wave of N concurrent fallbacks:
+  # T_fetch(L) = (S/BW + H + M) × L  [independent of N — each fetches in parallel]
+  # T_recompute_last(N,L) = N × (aL + bL²)  [serialized]
+  # L* = (fetch_per_tok/N - a) / b
+  loaded_crossover_N1_degraded_tokens:
+    value: 103175
+    units: "tokens"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "N=1 at 1400 MB/s. Crossover at ~101K. Only at degraded BW and single request does recompute remain competitive."
+  loaded_crossover_N1_quiescent_tokens:
+    value: 30307
+    units: "tokens"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "N=1 at 2588 MB/s. Crossover at ~30K."
+  loaded_crossover_N1_quiet_evening_tokens:
+    value: 2826
+    units: "tokens"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "N=1 at 3806 MB/s. Crossover at ~2.8K — fetch wins for nearly all practical context lengths."
+  loaded_crossover_N1_peak_tokens:
     value: null
     units: "tokens"
-    source: "PENDING"
-    script: "analysis/crossover.py"
-    date: null
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "N=1 at 4993+ MB/s. Fetch per-token cost (28.6 us) < prefill linear (35.2 us). FETCH ALWAYS WINS."
+  loaded_crossover_N2_degraded_tokens:
+    value: 21782
+    units: "tokens"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "N=2 at 1400 MB/s. Crossover drops to 21K. At all other BW states: fetch always wins."
+  loaded_crossover_N4_plus:
+    value: null
+    units: "tokens"
+    source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "N>=4 at ANY bandwidth state: FETCH ALWAYS WINS. The queueing penalty (N× service time) makes recompute uncompetitive everywhere."
+  loaded_verdict:
+    value: "Under concurrent fallback load (N>=2), fetch dominates; GPU serialization is the decisive factor"
+    units: "string"
+    source: "data/loaded_phase_diagram.png"
+    script: "scripts/prefill_loaded_sweep_v2.py"
+    date: "2026-09-16"
+    note: "VERIFIED — serialization is real hardware behavior, not a benchmark artifact. Diagnostic (job 155248) confirmed: (1) vLLM batches tokens from multiple requests into shared forward passes, (2) AsyncLLMEngine with concurrent arrivals produces identical ratios (3.35x for N=4), (3) all requests complete simultaneously (not staggered). Batching occurs but provides only ~15% benefit because prefill is compute-bound — total throughput is constant regardless of batch composition. T_last(N) ≈ 0.85*N*T_service(1). N=1: depends on BW (101K/30K/2.8K crossovers). N>=4: fetch always wins at any BW. All coefficients specific to H100 NVL 400W TDP (SM 960-1035 MHz sustained). H100 SXM 700W would have ~1.5x higher sustained clocks, shifting crossovers outward. Phase diagram in data/loaded_phase_diagram.png."
   nvme_tokens:
     value: null
     units: "tokens"
