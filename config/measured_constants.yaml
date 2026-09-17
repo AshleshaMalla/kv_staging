@@ -507,3 +507,79 @@ crossover:
     source: "PENDING"
     script: "analysis/crossover.py"
     date: null
+
+queue_aware_compute:
+  # Breaking ObjectCache's fixed-compute-window assumption (arXiv:2605.22850).
+  # ┌─────────────────────────────────────────────────────────────────────┐
+  # │ SCOPE: every number here is a FIXED-N result (N=4, the workload size).│
+  # │ It tests "compute queue deepens -> c stretches" and NOT "transfers    │
+  # │ stretch -> more requests in flight". Concurrency is an INPUT, not an  │
+  # │ output. The concurrency-feedback channel is untested (planned         │
+  # │ discrete-event follow-on). Do not read sub-additivity as "the effects │
+  # │ never compound" — only that they don't through the compute-window     │
+  # │ channel at fixed N. See docs/DECISIONS.md 2026-09-17.                  │
+  # └─────────────────────────────────────────────────────────────────────┘
+  # Pure simulation. Uses OUR vLLM prefill coefficients (a=3.5158e-5,
+  # b=5.8979e-10; H100 NVL 400W, SM 960-1035 MHz, FlashAttn v3), NOT the
+  # paper's A100 Table A8 numbers. Compute window c = T_prefill(uncached)/L,
+  # uncached = ctx*(1-hit).
+  rstar_overestimate_factor:
+    value: "1.85 / 3.55 / 6.95 / 13.75 at N=2/4/8/16"
+    units: "dimensionless ratio"
+    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
+    script: "analysis/queue_compute.py"
+    date: "2026-09-17"
+    note: "r*_iso / r*_queued = 1 + 0.85*(N-1), from measured Q(N)=0.85*(N-1)*service (job 155248). ObjectCache allocates r*_iso, so it over-provisions bandwidth to a queued request by this factor — bandwidth the request cannot usefully absorb (compute not yet started). Under batching all N share the GPU equally; queue position is degenerate."
+  superadditivity_interaction_wl_a_ms:
+    value: "Equal -588, Stall-opt -441, Cal.Stall-opt -406 (all sub-additive)"
+    units: "ms (interaction = cell4 - [(cell2)+(cell3)-(cell1)])"
+    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
+    script: "analysis/queue_compute.py"
+    date: "2026-09-17"
+    note: "FIXED-N result. Superadditivity hypothesis TESTED AND NOT SUPPORTED: effects partially OFFSET. Mechanism: queueing stretches c 3.55x at N=4, giving the pipeline more shadow to hide transfers, so bimodal damage is smaller under queued-c (Stall-opt WL-A: +1036 ms at iso-c vs +595 ms at queued-c). BW-prop control has interaction exactly 0.0 — it is transfer-bound so max(X,c)=X and the compute window never binds."
+  superadditivity_interaction_wl_b_ms:
+    value: "Equal -568, Stall-opt -276, Cal.Stall-opt -282 (all sub-additive)"
+    units: "ms (interaction = cell4 - [(cell2)+(cell3)-(cell1)])"
+    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
+    script: "analysis/queue_compute.py"
+    date: "2026-09-17"
+    note: "FIXED-N result. Same sign as Workload A. BW-prop interaction exactly 0.0."
+  four_cell_added_ttft_wl_a_ms:
+    value: "Equal [3534.4,4772.4,8855.7,9505.6]; Stall-opt [2839.4,3875.3,7896.2,8491.7]; Cal.Stall-opt [3057.7,3936.0,8070.2,8542.1]; KV-prop [3768.5,4871.2,8379.2,9272.7]; BW-prop [11108.6,12950.4,11309.0,13150.9]"
+    units: "ms; cells = [iso+const, iso+bimod, queued+const, queued+bimod]"
+    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
+    script: "analysis/queue_compute.py"
+    date: "2026-09-17"
+    note: "Aggregate added TTFT vs isolated infinite-BW baseline L*c_iso, 200 start-time averages, epoch 1s, bimodal depth 2.3 / episode 30s. Naive scheduler (allocates from r*_iso in all cells). FIXED N=4."
+  four_cell_added_ttft_wl_b_ms:
+    value: "Equal [7012.5,8557.1,11150.8,12127.0]; Stall-opt [5906.4,7336.4,9927.2,11081.2]; Cal.Stall-opt [5906.4,7369.1,9927.2,11108.4]; KV-prop [7012.5,8680.9,11064.4,12294.0]; BW-prop [19235.6,21501.1,19436.0,21701.5]"
+    units: "ms; cells = [iso+const, iso+bimod, queued+const, queued+bimod]"
+    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
+    script: "analysis/queue_compute.py"
+    date: "2026-09-17"
+    note: "cap 50 Gbps. FIXED N=4."
+  inversion_under_queueing:
+    value: "holds both cells; effect of queueing MIXED and small (WL-A weaker, WL-B stronger)"
+    units: "string"
+    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
+    script: "analysis/queue_compute.py"
+    date: "2026-09-17"
+    note: "Stall-opt/Equal degradation gap: WL-A +0.015 (iso) -> +0.002 (queued); WL-B +0.022 -> +0.029. We do NOT claim queueing amplifies the inversion."
+
+trace_sensitivity_corrections:
+  # Corrections 1 & 2 to the time-varying findings. PAPER's Table A8 compute
+  # window (t_total/L), unchanged. Script: analysis/corrections.py.
+  uniform_floor_attribution:
+    value: "Stall-opt WL-A degradation 14.5x / 11.3x / 8.5x / 5.4x at floors 0/10/25/50% of mean"
+    units: "dimensionless degradation ratio (trace/constant)"
+    source: "data/raw/corrections_20260917T035721Z/results.txt"
+    script: "analysis/corrections.py"
+    date: "2026-09-17"
+    note: "Floor 0% = uniform[0,2*mean] = Cake's assumed model (their §5.6, Uniform(0,25 Gbps)), NOT realistic; reference only. ~23% of the effect comes from samples below 25% of mean, ~47% from below 50% (attribution on identical draws). Real Jensen behavior driven by the near-zero tail."
+  bimodal_inversion_surface:
+    value: "inversion holds 39/42 WL-A cells, 42/42 WL-B"
+    units: "count of (duration,gap) cells where Stall-opt degrades more than Equal"
+    source: "data/raw/corrections_20260917T035721Z/results.txt"
+    script: "analysis/corrections.py"
+    date: "2026-09-17"
+    note: "Depth R=2.3 MEASURED (one observed episode); low-episode DURATION and inter-episode GAP SWEPT (assumptions). Mean held at cap. Inversion strongest for long low-episodes + short gaps; fails only at long duration + short gap (e.g. 120s/30s -> 0.94) where the trace is mostly-low and Equal's headroom erodes too."
