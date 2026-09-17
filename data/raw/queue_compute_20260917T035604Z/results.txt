@@ -1,0 +1,88 @@
+================================================================================
+QUEUE-AWARE COMPUTE WINDOW — four-cell experiment
+Timestamp: 20260917T035604Z
+================================================================================
+
+OUR HARDWARE (H100 NVL, 400W, SM 960-1035 MHz, vLLM+FlashAttn v3).
+vLLM prefill coeffs:  a = 3.5158e-05 s/tok   b = 5.8979e-10 s/tok^2
+Queueing model:       Q(N) = 0.85*(N-1)*service  (measured, job 155248)
+Concurrency:          N = 4 (the 4 workload requests share the GPU)
+c_queued/c_iso factor at N=4:  3.550
+Compute window: c = T_prefill(uncached)/L, uncached = ctx*(1-hit).
+Scheduler is naive (allocates from r*_iso in all cells); physics uses c_actual.
+Added TTFT measured vs fixed baseline L*c_iso.
+
+--------------------------------------------------------------------------------
+HOW WRONG r*_i GETS UNDER QUEUEING:  r*_iso / r*_queued = 1 + 0.85*(N-1)
+--------------------------------------------------------------------------------
+     N    r*_iso/r*_queued   interpretation
+     1               1.000   r*_iso overestimates useful BW by 1.00x
+     2               1.850   r*_iso overestimates useful BW by 1.85x
+     4               3.550   r*_iso overestimates useful BW by 3.55x
+     8               6.950   r*_iso overestimates useful BW by 6.95x
+    16              13.750   r*_iso overestimates useful BW by 13.75x
+
+  (Under measured batching all N share the GPU equally, so every request
+   in the wave sees the same factor — position in the queue is degenerate.)
+
+--------------------------------------------------------------------------------
+PER-REQUEST COMPUTE WINDOWS (our vLLM coeffs)
+--------------------------------------------------------------------------------
+       Request   cached  uncached   c_iso ms  c_queued ms   r*_iso Gbps
+     16K/50.0%     8192      8192      10.24        36.34         26.22
+     16K/87.5%    14336      2048       2.33         8.26        201.84
+     64K/50.0%    32768     32768      55.79       198.06         19.25
+     64K/87.5%    57344      8192      10.24        36.34        183.55
+
+================================================================================
+WORKLOAD A  (cap = 80 Gbps)   —  Aggregate ADDED TTFT (ms)
+================================================================================
+Policy                (1) c_iso+const      (2) c_iso+bimod   (3) c_queued+const   (4) c_queued+bimod
+----------------------------------------------------------------------------------------------------
+Equal                          3534.4               4772.4               8855.7               9505.6
+KV-prop                        3768.5               4871.2               8379.2               9272.7
+BW-prop                       11108.6              12950.4              11309.0              13150.9
+Stall-opt                      2839.4               3875.3               7896.2               8491.7
+Cal. Stall-opt                 3057.7               3936.0               8070.2               8542.1
+
+SUPERADDITIVITY CHECK  (added TTFT over the cell-1 reference)
+  independent-effects prediction of (4):  pred = (2)+(3)-(1)
+  interaction = (4) - pred ;  >0 SUPERadditive (compound), <0 SUBadditive (offset)
+  Policy             (4) actual   pred indep   interaction   (4)/pred   verdict
+  Equal                  9505.6      10093.7        -588.2      0.942   sub-additive
+  KV-prop                9272.7       9482.0        -209.2      0.978   sub-additive
+  BW-prop               13150.9      13150.9          -0.0      1.000   additive
+  Stall-opt              8491.7       8932.1        -440.5      0.951   sub-additive
+  Cal. Stall-opt         8542.1       8948.5        -406.3      0.955   sub-additive
+
+STALL-OPT / EQUAL INVERSION under bimodal:
+  cell (2) isolated c:  Stall-opt deg 1.365x  Equal deg 1.350x  -> inversion HOLDS
+  cell (4) queued  c:  Stall-opt deg 1.075x  Equal deg 1.073x  -> inversion HOLDS
+  Inversion gap (SO-EQ deg):  cell2 +0.015  cell4 +0.002  -> inversion is WEAKER under queueing
+
+================================================================================
+WORKLOAD B  (cap = 50 Gbps)   —  Aggregate ADDED TTFT (ms)
+================================================================================
+Policy                (1) c_iso+const      (2) c_iso+bimod   (3) c_queued+const   (4) c_queued+bimod
+----------------------------------------------------------------------------------------------------
+Equal                          7012.5               8557.1              11150.8              12127.0
+KV-prop                        7012.5               8680.9              11064.4              12294.0
+BW-prop                       19235.6              21501.1              19436.0              21701.5
+Stall-opt                      5906.4               7336.4               9927.2              11081.2
+Cal. Stall-opt                 5906.4               7369.1               9927.2              11108.4
+
+SUPERADDITIVITY CHECK  (added TTFT over the cell-1 reference)
+  independent-effects prediction of (4):  pred = (2)+(3)-(1)
+  interaction = (4) - pred ;  >0 SUPERadditive (compound), <0 SUBadditive (offset)
+  Policy             (4) actual   pred indep   interaction   (4)/pred   verdict
+  Equal                 12127.0      12695.4        -568.4      0.955   sub-additive
+  KV-prop               12294.0      12732.8        -438.8      0.966   sub-additive
+  BW-prop               21701.5      21701.5          -0.0      1.000   additive
+  Stall-opt             11081.2      11357.2        -275.9      0.976   sub-additive
+  Cal. Stall-opt        11108.4      11389.8        -281.5      0.975   sub-additive
+
+STALL-OPT / EQUAL INVERSION under bimodal:
+  cell (2) isolated c:  Stall-opt deg 1.242x  Equal deg 1.220x  -> inversion HOLDS
+  cell (4) queued  c:  Stall-opt deg 1.116x  Equal deg 1.088x  -> inversion HOLDS
+  Inversion gap (SO-EQ deg):  cell2 +0.022  cell4 +0.029  -> inversion is STRONGER under queueing
+

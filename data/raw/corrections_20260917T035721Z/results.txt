@@ -1,0 +1,100 @@
+Corrections 1 & 2 to time-varying bandwidth findings
+Timestamp: 20260917T035721Z
+Compute window: PAPER's Table A8 (t_total/L).  epoch=1.0s, 200 starts.
+
+================================================================================
+CORRECTION 1 — Bounding the uniform-trace result
+================================================================================
+
+The unfloored number (floor=0%, uniform[0,2*mean]) is the literature's
+assumed model (Cake §5.6: bandwidth ~ Uniform(0, 25 Gbps)), NOT a
+distribution any storage system produces.  It is kept as reference only.
+
+WORKLOAD A  (cap = 80 Gbps)
+------------------------------------------------------------------------
+(a) Truncated uniform[floor*mean, (2-floor)*mean], mean preserved:
+    Degradation ratio = delta-TTFT(trace) / delta-TTFT(constant)
+      Floor           Equal         KV-prop         BW-prop       Stall-opt  Cal. Stall-opt
+    ---------------------------------------------------------------------------------------
+        0%            3.468           2.619           4.695          14.516           7.499
+       10%            2.786           2.137           4.131          11.294           5.598
+       25%            2.188           1.755           3.368           8.520           3.914
+       50%            1.643           1.355           2.359           5.369           2.117
+
+(b) Fraction of the unfloored effect (ratio-1) contributed by
+    samples BELOW each floor (clamp-and-measure on identical draws):
+      Floor           Equal         KV-prop         BW-prop       Stall-opt  Cal. Stall-opt
+    ---------------------------------------------------------------------------------------
+    <  10%             7.6%            9.0%            2.3%            6.7%            7.5%
+    <  25%            29.9%           30.3%           12.5%           23.1%           27.1%
+    <  50%            58.9%           62.7%           42.8%           46.9%           58.1%
+
+    Stall-opt unfloored ratio: 14.52x  ->  at 10% floor: 11.29x  ->  at 25%: 8.52x  ->  at 50%: 5.37x
+
+WORKLOAD B  (cap = 50 Gbps)
+------------------------------------------------------------------------
+(a) Truncated uniform[floor*mean, (2-floor)*mean], mean preserved:
+    Degradation ratio = delta-TTFT(trace) / delta-TTFT(constant)
+      Floor           Equal         KV-prop         BW-prop       Stall-opt  Cal. Stall-opt
+    ---------------------------------------------------------------------------------------
+        0%            2.263           2.307           2.047           6.548           3.448
+       10%            1.979           2.016           1.894           5.367           2.858
+       25%            1.666           1.718           1.692           4.104           2.252
+       50%            1.363           1.413           1.411           2.843           1.708
+
+(b) Fraction of the unfloored effect (ratio-1) contributed by
+    samples BELOW each floor (clamp-and-measure on identical draws):
+      Floor           Equal         KV-prop         BW-prop       Stall-opt  Cal. Stall-opt
+    ---------------------------------------------------------------------------------------
+    <  10%             4.4%            5.2%            2.4%            4.4%            5.1%
+    <  25%            24.2%           24.2%           13.2%           22.2%           25.4%
+    <  50%            57.3%           52.2%           44.8%           45.9%           52.0%
+
+    Stall-opt unfloored ratio: 6.55x  ->  at 10% floor: 5.37x  ->  at 25%: 4.10x  ->  at 50%: 2.84x
+
+================================================================================
+CORRECTION 2 — Bimodal as a (duration, gap) sensitivity surface
+================================================================================
+
+Depth R = 2.3 (B_high/B_low) is MEASURED (one observed
+degradation episode, ~2.3x).  Low-episode DURATION and inter-episode
+GAP are SWEPT — we saw exactly one episode, so their values are
+assumptions.  Mean is held at the cap for every (duration, gap).
+
+Cell = Stall-opt degradation ratio / Equal degradation ratio.
+  > 1  => INVERSION HOLDS  (Stall-opt degrades MORE than Equal)
+  < 1  => inversion GONE   (Equal degrades more)
+
+WORKLOAD A  (cap = 80 Gbps)
+------------------------------------------------------------------------
+   dur\gap       5s      15s      30s      60s     120s     300s     600s
+  -----------------------------------------------------------------------
+        2s   2.45*   1.72*   1.40*   1.21*   1.12*   1.05*   1.02*
+        5s   1.80*   1.83*   1.58*   1.37*   1.19*   1.09*   1.05*
+       15s   1.17*   1.39*   1.60*   1.50*   1.32*   1.14*   1.10*
+       30s   1.06*   1.09*   1.29*   1.49*   1.42*   1.25*   1.16*
+       60s   1.01*   0.94    1.04*   1.25*   1.45*   1.36*   1.24*
+      120s   1.01*   0.96    0.94    1.02*   1.24*   1.42*   1.35*
+
+  ('*' marks cells where the Stall-opt/Equal inversion holds)
+
+  Inversion HOLDS in 39/42 cells.
+  Inversion strongest at long low-episodes / short gaps (sustained degradation).
+  Inversion weakest / gone at: dur=120s gap=30s (ratio 0.94) — brief, rare dips.
+
+WORKLOAD B  (cap = 50 Gbps)
+------------------------------------------------------------------------
+   dur\gap       5s      15s      30s      60s     120s     300s     600s
+  -----------------------------------------------------------------------
+        2s   1.58*   1.24*   1.12*   1.06*   1.03*   1.01*   1.00*
+        5s   1.83*   1.47*   1.25*   1.15*   1.07*   1.02*   1.02*
+       15s   1.59*   1.60*   1.58*   1.36*   1.19*   1.06*   1.05*
+       30s   1.39*   1.58*   1.54*   1.45*   1.31*   1.15*   1.09*
+       60s   1.23*   1.41*   1.51*   1.51*   1.42*   1.25*   1.15*
+      120s   1.13*   1.27*   1.39*   1.49*   1.50*   1.37*   1.26*
+
+  ('*' marks cells where the Stall-opt/Equal inversion holds)
+
+  Inversion HOLDS in 42/42 cells.
+  Inversion holds across the ENTIRE swept surface.
+

@@ -1,0 +1,108 @@
+================================================================================
+Step 2a: Time-Varying Bandwidth Simulation
+Timestamp: 20260916T225743Z
+Default epoch: 1.0 s, start-time averaging: 200 starts
+================================================================================
+
+WORKLOAD A  (cap = 80 Gbps)
+------------------------------------------------------------------------
+Trace statistics:
+  Constant      mean =  80.00 Gbps  CV =  0.00%  dur = 1200s
+  Quiescent     mean =  80.00 Gbps  CV =  0.65%  dur = 6208s
+  Bimodal       mean =  80.00 Gbps  CV = 39.39%  dur = 1200s
+  Uniform       mean =  80.15 Gbps  CV = 57.20%  dur = 600s
+
+Aggregate delta TTFT (ms) — epoch = 1.0 s:
+Policy                  Constant     Quiescent       Bimodal       Uniform
+--------------------------------------------------------------------------
+Equal                     1204.1        1203.8        1993.1        4175.9
+KV-prop                   1846.1        1845.7        2389.1        4834.0
+BW-prop                   2097.9        2099.2        5284.9        9848.8
+Stall-opt                  459.5         460.3         984.3        6670.5
+Cal. Stall-opt             480.8         480.8        1074.0        3606.0
+
+Degradation ratio  (trace / Constant):
+Policy                 Quiescent       Bimodal       Uniform
+------------------------------------------------------------
+Equal                   0.999750      1.655248      3.468050
+KV-prop                 0.999815      1.294164      2.618515
+BW-prop                 1.000618      2.519180      4.694612
+Stall-opt               1.001588      2.142029     14.516070
+Cal. Stall-opt          0.999962      2.233606      7.499339
+
+
+WORKLOAD B  (cap = 50 Gbps)
+------------------------------------------------------------------------
+Trace statistics:
+  Constant      mean =  50.00 Gbps  CV =  0.00%  dur = 1200s
+  Quiescent     mean =  50.00 Gbps  CV =  0.65%  dur = 6208s
+  Bimodal       mean =  50.00 Gbps  CV = 39.39%  dur = 1200s
+  Uniform       mean =  50.10 Gbps  CV = 57.20%  dur = 600s
+
+Aggregate delta TTFT (ms) — epoch = 1.0 s:
+Policy                  Constant     Quiescent       Bimodal       Uniform
+--------------------------------------------------------------------------
+Equal                     3499.2        3499.0        4561.7        7918.8
+KV-prop                   3673.1        3672.9        5213.1        8475.4
+BW-prop                  10525.9       10529.5       12804.6       21546.3
+Stall-opt                 1331.2        1331.5        2678.5        8716.4
+Cal. Stall-opt            1740.1        1739.5        3504.2        5999.9
+
+Degradation ratio  (trace / Constant):
+Policy                 Quiescent       Bimodal       Uniform
+------------------------------------------------------------
+Equal                   0.999943      1.303635      2.263024
+KV-prop                 0.999944      1.419240      2.307409
+BW-prop                 1.000340      1.216482      2.046969
+Stall-opt               1.000222      2.012097      6.547832
+Cal. Stall-opt          0.999672      2.013786      3.447992
+
+
+================================================================================
+EPOCH SENSITIVITY — Bimodal trace
+================================================================================
+
+WORKLOAD A  (cap = 80 Gbps)
+Epoch (s)              Equal         KV-prop         BW-prop       Stall-opt  Cal. Stall-opt
+--------------------------------------------------------------------------------------------
+0.01                  1969.7          2372.3          5200.5           925.8          1056.8
+0.05                  1971.4          2373.9          5205.3           929.3          1058.2
+0.10                  1973.9          2375.9          5211.5           930.1          1059.4
+0.50                  1982.7          2383.5          5245.5           952.3          1064.9
+1.00                  1993.1          2389.1          5284.9           984.3          1074.0
+5.00                  2073.3          2421.0          5576.9          1217.5          1118.0
+10.00                 2073.3          2421.0          5814.0          1458.7          1123.4
+30.00                 2073.3          2421.0          6303.0          1815.4          1123.4
+60.00                 2073.3          2421.0          6303.0          1815.4          1123.4
+
+
+WORKLOAD B  (cap = 50 Gbps)
+Epoch (s)              Equal         KV-prop         BW-prop       Stall-opt  Cal. Stall-opt
+--------------------------------------------------------------------------------------------
+0.01                  4517.1          5166.9         12637.6          2608.3          3472.3
+0.05                  4519.7          5170.2         12645.8          2612.8          3474.8
+0.10                  4524.3          5174.6         12658.2          2616.0          3479.1
+0.50                  4541.8          5191.9         12723.8          2643.7          3492.3
+1.00                  4561.7          5213.1         12804.6          2678.5          3504.2
+5.00                  4685.0          5342.3         13391.2          2942.2          3609.4
+10.00                 4817.8          5342.3         13995.4          3182.8          3624.9
+30.00                 4817.8          5342.3         16061.1          3539.5          3624.9
+60.00                 4817.8          5342.3         16061.1          3539.5          3624.9
+
+
+================================================================================
+KEY FINDINGS
+================================================================================
+
+Workload A:
+  Bimodal degradation:  Equal 1.6552x  Stall-opt 2.1420x  Cal.Stall-opt 2.2336x
+  Stall-opt degrades MORE than Equal under bimodal (2.1420 vs 1.6552)
+  Uniform degradation:  Equal 3.4681x  Stall-opt 14.5161x
+  Bimodal vs Uniform gap for Stall-opt: 12.3740 (sustained drops vs rapid fluctuation)
+
+Workload B:
+  Bimodal degradation:  Equal 1.3036x  Stall-opt 2.0121x  Cal.Stall-opt 2.0138x
+  Stall-opt degrades MORE than Equal under bimodal (2.0121 vs 1.3036)
+  Uniform degradation:  Equal 2.2630x  Stall-opt 6.5478x
+  Bimodal vs Uniform gap for Stall-opt: 4.5357 (sustained drops vs rapid fluctuation)
+
