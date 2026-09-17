@@ -566,6 +566,47 @@ queue_aware_compute:
     date: "2026-09-17"
     note: "Stall-opt/Equal degradation gap: WL-A +0.015 (iso) -> +0.002 (queued); WL-B +0.022 -> +0.029. We do NOT claim queueing amplifies the inversion."
 
+  # ── Feedback regime: N is an OUTPUT (analysis/queue_feedback.py) ──
+  # The fixed-N results above are the CONTROL (what ObjectCache/Cake's fixed-
+  # request-set assumption produces). When concurrency responds to bandwidth
+  # (open-loop Poisson arrivals), the SIGN of the storage x compute coupling
+  # flips from sub-additive to super-additive. See docs/DECISIONS.md 2026-09-17.
+  coupling_sign_contingency:
+    value: "fixed-N sub-additive (Stall-opt -441 WL-A); feedback super-additive (Stall-opt +600.9 at 70% load)"
+    units: "ms (interaction = cell4 - [(cell2)+(cell3)-(cell1)])"
+    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
+    script: "analysis/queue_feedback.py"
+    date: "2026-09-17"
+    note: "HEADLINE. The sign of the coupling is determined by whether concurrency can respond to bandwidth. Not 'we found superadditivity' — the fixed-N and feedback results are a PAIR."
+  feedback_interaction_stall_opt_ms:
+    value: "50% +79.4, 70% +600.9, 85% +1140.8 (all SUPER-additive)"
+    units: "ms interaction; load as fraction of ~1.59 req/s capacity"
+    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
+    script: "analysis/queue_feedback.py"
+    date: "2026-09-17"
+    note: "Non-censored loads only (0.0% unfinished at 30-85%). 95% EXCLUDED — censored and asymmetric (Equal 4.4% unfinished, Stall-opt 1.7%, BW-prop 0%), which deflates Equal's tail. Equal interaction: 50% +93.5, 70% +545.8, 85% +944.3. BW-prop ~0 until saturation (transfer-bound control)."
+  feedback_metastability_drain_s:
+    value: "70% load: 94s (1.57x episode); 85% load: 155s (2.58x episode)"
+    units: "s to drain N to pre-episode level after a 60s degradation episode"
+    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
+    script: "analysis/queue_feedback.py"
+    date: "2026-09-17"
+    note: "STRONGEST single finding. The queue built during a 60s bandwidth-degradation episode outlives its cause by 1.5-2.6x after bandwidth fully recovers. Connects to CacheGen estimator blindness: a throughput-based bandwidth estimator sees a healthy path during the drain window while the system is still degraded, for a reason (occupancy) it cannot observe. 95% load excluded as intrinsic instability (pre-episode N~28 and climbing)."
+  feedback_N_response:
+    value: "peak N=41, mean N=12.56; mean N 13.33 low-BW vs 11.79 high-BW"
+    units: "count of concurrent requests"
+    source: "data/raw/queue_feedback_20260917T042116Z/N_timeseries.csv"
+    script: "analysis/queue_feedback.py"
+    date: "2026-09-17"
+    note: "Representative run: 85% load, bimodal BW, Stall-opt, queued. N tracks bandwidth inversely (ramps in low-BW episodes, drains on recovery) — confirms the feedback loop closes. Plot: N_vs_bw.png."
+  feedback_effective_capacity:
+    value: "below the 1.59 req/s compute-only estimate (INFERRED, not measured)"
+    units: "req/s"
+    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
+    script: "analysis/queue_feedback.py"
+    date: "2026-09-17"
+    note: "INFERENCE from observing intrinsic instability at 95% offered load (pre-episode N climbing), not a direct measurement. Naive r*_iso scheduling + queueing overhead reduce effective capacity below the compute-bound 1.59 req/s. To MEASURE it: sweep arrival rate with NO degradation episode and find where mean N stops draining (the stability boundary)."
+
 trace_sensitivity_corrections:
   # Corrections 1 & 2 to the time-varying findings. PAPER's Table A8 compute
   # window (t_total/L), unchanged. Script: analysis/corrections.py.

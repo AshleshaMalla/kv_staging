@@ -51,23 +51,44 @@ derived from the H100 SXM spec (989.5 TFLOP/s at 1830 MHz, same 132 SMs).
 behavior. After clocks are resolved, re-run the full prefill sweep and crossover
 analysis from scratch.
 
-## 2026-09-17 — Queue-aware compute window: superadditivity tested at fixed N, NOT supported
+## 2026-09-17 — The sign of storage×compute coupling is contingent on whether concurrency can respond to bandwidth
 
-**SCOPE CAVEAT — READ FIRST.** This experiment holds the concurrency N fixed at
-4 (the workload size). It therefore tests only ONE of the two links in the
-causal chain we care about:
+**HEADLINE.** Break ObjectCache's assumption (arXiv:2605.22850) that the
+per-layer compute window c_i is a fixed property of request i, independent of
+concurrent load — on our hardware prefill throughput saturates at concurrency 1,
+so N requests serialize with measured queueing Q(N) ≈ 0.85·(N−1)·service (job
+155248; N=4 wall-time ratio 3.45x/3.35x). The question was whether storage
+degradation (bandwidth variance) and compute contention (queueing) *compound*.
+The answer is: **the SIGN of the coupling is determined by whether concurrency
+can respond to bandwidth.**
 
-  - TESTED: "compute queue deepens → per-layer compute window c stretches."
-  - NOT TESTED: "storage degrades → transfers stretch → more requests in flight
-    at once." Here N does not respond to bandwidth; it is an input, not an
-    output.
+  - **Fixed N (control): SUB-additive.** With N pinned at the workload size,
+    interaction = −441 ms for Stall-opt (Workload A). Queueing stretches the
+    compute window, which *shields* against bandwidth stalls.
+  - **Feedback (N is an output): SUPER-additive.** When N responds to bandwidth,
+    interaction = +600.9 ms for Stall-opt at 70% load. Concurrency growth
+    *compounds* the two penalties.
 
-Every result below is a fixed-N result. The concurrency-feedback channel — where
-a degradation episode inflates N and N feeds back into c — is exactly where
-compounding could still appear, and it is deferred to a follow-on discrete-event
-simulation. Do not read the sub-additivity finding as "the two effects don't
-compound." Read it as "through the compute-window channel alone, at fixed N,
-they don't compound; the feedback channel is untested."
+These two are a PAIR, not a hypothesis and its refutation. Both ObjectCache and
+Cake evaluate with fixed request sets, so the fixed-N result is the CONTROL that
+shows what their modeling assumption produces — sub-additivity — and the feedback
+result shows what actually happens once offered load is open-loop. Neither system
+models either half. The mechanism is symmetric: fixed N → queueing stretches the
+compute window 3.55x (N=4), giving the layer pipeline more shadow to hide
+transfers under; feedback → bandwidth drops stretch transfers, occupancy climbs
+(peak N=41 vs mean 12.6; mean N 13.3 in low-BW samples vs 11.8 in high-BW), the
+per-request compute window compresses in useful terms, and r*_i estimates degrade
+further.
+
+Both halves are pure simulation driven by our measured vLLM prefill coefficients
+(a=3.5158e-5 s/tok, b=5.8979e-10 s/tok²; SM 960–1035 MHz sustained under a 400W
+cap, FlashAttn v3 — NOT the paper's A100 Table A8 numbers), measured
+Q(N)=0.85·(N−1)·service, and measured storage traces. Feedback half uses
+open-loop Poisson arrivals. Not validated against a live serving system.
+
+---
+
+### Part 1 — Fixed N (the control)
 
 **Setup.** We break ObjectCache's assumption (arXiv:2605.22850) that the
 per-layer compute window c_i is a fixed property of request i. On our hardware
@@ -135,11 +156,88 @@ that could serve others. This is a real misallocation finding independent of the
 TTFT interaction; under batching all N share the GPU equally, so position in the
 queue is degenerate and every request in the wave sees the same factor.
 
-**Inversion status (Stall-opt degrades more than Equal under bimodal).** Holds in
-both bimodal cells, but the effect of queueing on it is directionally MIXED and
-small: Workload A weaker (SO−EQ degradation gap +0.015 → +0.002), Workload B
-slightly stronger (+0.022 → +0.029). We do NOT claim queueing amplifies the
-inversion.
+**Stall-opt vs Equal — both metrics (fixed N).** Two different comparisons that
+need not agree, reported together (see Correction 2 below): by ABSOLUTE added
+TTFT, Stall-opt is lower (better) than Equal in every cell (WL-A cell 4: 8491.7
+vs 9505.6). By degradation RATIO (bimodal/constant), Stall-opt is HIGHER (more
+variance-sensitive) — the "inversion." So Stall-opt is simultaneously better on
+average and more sensitive to variance. The effect of queueing on the ratio
+inversion is directionally MIXED and small (WL-A SO−EQ gap +0.015 → +0.002; WL-B
++0.022 → +0.029); we do NOT claim queueing amplifies it.
+
+### Part 2 — Feedback (N is an output)
+
+**Setup.** Discrete-event, time-stepped (`analysis/queue_feedback.py`, data
+`data/raw/queue_feedback_20260917T042116Z/`). Open-loop Poisson arrivals — a
+closed-loop client would throttle offered load when latency rises and hide the
+queue growth we are hunting. Each request holds a concurrency slot until BOTH its
+KV fetch (rate = policy allocation from r*_iso, the same naive scheduler) and its
+prefill compute (rate = 1/(1+0.85·(N−1)) of real time) finish; slower transfers
+lengthen occupancy, raising N, which feeds back into the compute window. N(t) is
+logged. Same four cells (iso vs queued × constant vs bimodal BW), same
+interaction form. Metric is mean added TTFT over completed requests. Arrival rate
+swept as a fraction of the compute-bound capacity estimate (~1.59 req/s).
+
+**N responds to bandwidth — the loop closes.** Representative run (85% load,
+bimodal, Stall-opt, queued): N tracks bandwidth inversely, ramping through every
+low-BW episode and draining on recovery — peak N=41, mean 12.6, mean N 13.3 in
+low-BW samples vs 11.8 in high-BW. Plot: `N_vs_bw.png`.
+
+**Superadditivity (interaction = (4) − [(2)+(3)−(1)], ms):**
+
+| Load | Equal | Stall-opt | Cal.SO | KV-prop | BW-prop | censoring |
+|------|------:|----------:|-------:|--------:|--------:|-----------|
+| 30%  | +14.6 |    +15.9  |  −11.0 |  +42.1  |   −6.1  | 0.0% |
+| 50%  | +93.5 |    +79.4  |  +57.5 | +191.8  |  −38.9  | 0.0% |
+| 70%  | +545.8|   +600.9  | +578.3 | +731.2  |  −23.0  | 0.0% |
+| 85%  | +944.3|  +1140.8  |+1110.8 |+2059.5  | +227.4  | 0.0% |
+| ~~95%~~ | ~~+415~~ | ~~+5537~~ | ~~+5696~~ | ~~+4506~~ | ~~+584~~ | **CENSORED** |
+
+The interaction is positive and grows steeply with load. It is already clean and
+uncensored at 50–70% — a stable regime with 0.0% unfinished requests — so the
+finding does not depend on the blow-up. All claims are based on the 50–85% range.
+
+**Correction 1 — the 95% row is censored and excluded.** At 95% offered load,
+requests that arrive in the eligible window but never finish by the horizon are
+dropped from the mean, and the censoring is ASYMMETRIC across policies: Equal
+4.4% (1155/1208 completed), KV-prop 2.8%, Stall-opt 1.7%, BW-prop 0%. Equal's
+slow tail is exactly what gets cut, which deflates its cell-4 mean and produces
+the misleading Equal +415 vs Stall-opt +5537 gap. The 95% row is unreliable and
+excluded from every claim. Loads 30–85% have 0.0% censoring and are the basis for
+all conclusions.
+
+**BW-prop is the control in both regimes.** Transfer-bound, so max(X,c)=X and the
+compute window never binds: interaction ≈ 0 (slightly negative) at every
+non-saturated load, exactly as in the fixed-N case where it was 0.0 to the
+decimal. It only turns positive once saturation drags everything up. The
+mechanism is credible because it vanishes precisely where the compute window
+stops mattering.
+
+**METASTABILITY — the strongest single finding.** One injected 60s degradation
+episode on otherwise-constant bandwidth, then full recovery at t=360s. The queue
+built during the episode OUTLIVES its cause: at 70% load N drains back in **94s
+(1.57× the 60s episode)**, at 85% in **155s (2.58×)**. The 95% case is excluded —
+its pre-episode window is already at N≈28 and climbing (N 22→35), i.e. intrinsic
+instability where offered load exceeds effective capacity, not episode-induced
+persistence.
+
+**Why metastability matters — it is CacheGen estimator blindness from the other
+side.** CacheGen estimates path bandwidth from the previous chunk's throughput.
+During the 94–155s drain window, bandwidth has fully recovered but the system has
+not: the queue is still draining. A throughput-based estimator sees a healthy
+path and resumes normal behavior while the system remains degraded for another
+95–155s, for a reason it structurally cannot observe (occupancy, not bandwidth).
+The estimator blindness we identified in CacheGen's text-fallback mode and this
+metastability are the same problem viewed from two directions: throughput is not
+a sufficient statistic for the state of a queueing system.
+
+**Stall-opt vs Equal — both metrics (feedback).** Same two comparisons as fixed
+N, non-censored loads: by ABSOLUTE added TTFT Stall-opt is lower (SO/EQ 0.93 →
+0.81 from 30% → 85%); by degradation ratio (cell4/cell3) Stall-opt is HIGHER
+(1.19–1.31 vs Equal 1.12–1.19), so the ratio inversion HOLDS and does not reverse
+under feedback. The two metrics disagree because they measure different things —
+average performance vs variance sensitivity — and the pattern is identical in
+both regimes: Stall-opt is better on average and more variance-sensitive.
 
 ## 2026-09-17 — Two corrections to the time-varying bandwidth findings
 
@@ -167,8 +265,7 @@ short gaps (sustained degradation) and only disappears in 3 Workload-A cells wit
 long duration + short gap (e.g. 120s/30s → ratio 0.94), where the trace is
 mostly-low and Equal's incidental headroom erodes too.
 
-**Follow-on (planned).** Discrete-event simulation where N is an OUTPUT: Poisson
-open-loop arrivals, slot occupancy that lengthens as received bandwidth drops, c
-recomputed from instantaneous N. That tests the concurrency-feedback channel this
-fixed-N work does not, and looks for metastability (a degradation episode whose
-queue outlives it).
+**Follow-on (DONE).** The concurrency-feedback simulation is implemented
+(`analysis/queue_feedback.py`) and is written up in the contingent-sign entry
+above — it found super-additivity and the metastability result (queue outlives a
+60s episode by 1.5–2.6×).
