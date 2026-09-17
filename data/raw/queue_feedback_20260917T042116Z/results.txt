@@ -1,0 +1,113 @@
+================================================================================
+PART 2 — CONCURRENCY-FEEDBACK SIMULATION (N is an output)
+Timestamp: 20260917T042116Z
+================================================================================
+
+SCOPE: this is the channel the fixed-N experiment (queue_compute.py)
+did NOT test. Here N responds to bandwidth: BW drops -> fetch stretches
+-> occupancy rises -> N rises -> compute window stretches -> r*_iso is
+more wrong -> allocation degrades further. Open-loop Poisson arrivals.
+
+Our vLLM coeffs a=3.5158e-05 b=5.8979e-10; Q(N)=0.85*(N-1)*service.
+Cap 80 Gbps, epoch 0.25s, bimodal depth 2.3 / episode 30.0s.
+Compute-bound capacity ~= 1.590 req/s (mean service 0.629s). Arrival rates swept as fractions.
+
+--------------------------------------------------------------------------------
+2a. REPRESENTATIVE RUN — N(t) vs bandwidth  (load 85% = 1.352 req/s, bimodal, Stall-opt, queued)
+--------------------------------------------------------------------------------
+  N(t)   [0..41 active]   ▁▁▂▂▂▂▃▂▁▂▂▃▃▃▂▂▁  ▁▂▂▃▃▃▁▂▁ ▂▃▄▅▆▆▅▅▆▆▇▆▄▅▄▃▃▃▃▂▂▁▁▁▂▁▁ ▁▁▁▁▁▁ ▁▂▂▂▁▁▁▃▅▅▄▃▁▁▃▄▃▁▁▁▁▁▁▂▃▃▃▄▅▄▂▂▁▂▃▄
+  BW(t)  [bimodal]           ███▅▃▃▅███▃▃▃▆██▆▃▃▃███▅▃▃▅███▃▃▃▆██▆▃▃▃███▅▃▃▅███▃▃▃▆██▆▃▃▃███▅▃▃▅███▃▃▃▆██▆▃▃▃███▅▃▃▅███▃▃▃▆██▆▃▃▃
+  mean N = 12.56   peak N = 41   N correlates with low-BW episodes: YES
+  full trace: data/raw/queue_feedback_20260917T042116Z/N_timeseries.csv
+
+--------------------------------------------------------------------------------
+2b. SUPERADDITIVITY UNDER FEEDBACK  (mean added TTFT ms; same form as Part 1)
+    cells: (1) iso+const  (2) iso+bimod  (3) queued+const  (4) queued+bimod
+    interaction = (4) - [(2)+(3)-(1)] ;  >0 SUPERadditive, <0 sub-additive
+--------------------------------------------------------------------------------
+
+  Load 30%  (0.477 req/s):
+    Policy                  (1)       (2)       (3)       (4)   interact   cens(4)  verdict
+    Equal                 599.1     712.6    1046.7    1174.7      +14.6      0.0%  SUPER-additive
+    KV-prop               637.6     805.2    1016.8    1226.6      +42.1      0.0%  SUPER-additive
+    BW-prop               547.3     700.4     783.9     930.8       -6.1      0.0%  sub-additive
+    Stall-opt             560.7     719.9     918.0    1093.0      +15.9      0.0%  SUPER-additive
+    Cal. Stall-opt        582.7     724.1     972.3    1102.8      -11.0      0.0%  sub-additive
+
+  Load 50%  (0.795 req/s):
+    Policy                  (1)       (2)       (3)       (4)   interact   cens(4)  verdict
+    Equal                 620.6     802.7    1683.3    1958.9      +93.5      0.0%  SUPER-additive
+    KV-prop               686.6     960.8    1642.1    2108.0     +191.8      0.0%  SUPER-additive
+    BW-prop               547.9     782.3    1163.3    1358.8      -38.9      0.0%  sub-additive
+    Stall-opt             572.8     828.3    1481.2    1816.1      +79.4      0.0%  SUPER-additive
+    Cal. Stall-opt        602.1     831.3    1549.8    1836.5      +57.5      0.0%  SUPER-additive
+
+  Load 70%  (1.113 req/s):
+    Policy                  (1)       (2)       (3)       (4)   interact   cens(4)  verdict
+    Equal                 752.6    1242.1    3410.0    4445.2     +545.8      0.0%  SUPER-additive
+    KV-prop               875.4    1533.2    3214.4    4603.5     +731.2      0.0%  SUPER-additive
+    BW-prop               691.4    1294.6    1771.6    2351.9      -23.0      0.0%  sub-additive
+    Stall-opt             724.4    1334.2    2830.7    4041.5     +600.9      0.0%  SUPER-additive
+    Cal. Stall-opt        751.6    1328.7    2930.1    4085.5     +578.3      0.0%  SUPER-additive
+
+  Load 85%  (1.352 req/s):
+    Policy                  (1)       (2)       (3)       (4)   interact   cens(4)  verdict
+    Equal                 973.3    1722.7    8973.9   10667.6     +944.3      0.0%  SUPER-additive
+    KV-prop              1202.5    2190.1    8109.0   11156.1    +2059.5      0.0%  SUPER-additive
+    BW-prop               945.8    1821.5    2485.8    3589.0     +227.4      0.0%  SUPER-additive
+    Stall-opt             970.5    1859.7    6656.2    8686.2    +1140.8      0.0%  SUPER-additive
+    Cal. Stall-opt       1000.1    1856.4    6763.1    8730.2    +1110.8      0.0%  SUPER-additive
+
+  Load 95%  (1.511 req/s):
+    Policy                  (1)       (2)       (3)       (4)   interact   cens(4)  verdict
+    Equal                 970.2    2125.1   39574.8   41144.9     +415.2      4.4%  SUPER-additive
+    KV-prop              1201.9    2784.2   32842.8   38931.7    +4506.7      2.8%  SUPER-additive
+    BW-prop               936.5    2329.2    3742.3    5719.8     +584.7      0.0%  SUPER-additive
+    Stall-opt             983.4    2372.4   22222.8   29149.7    +5537.8      1.7%  SUPER-additive
+    Cal. Stall-opt       1013.5    2362.9   22223.3   29269.0    +5696.3      1.7%  SUPER-additive
+
+  CENSORING CHECK (Correction 1): cens(4) = fraction of eligible arrivals
+  (arrived in [warmup, horizon-60s]) that did NOT finish by the horizon.
+  Completion counts for cell (4) queued+bimodal:
+      Load  Policy            completed/arrived  censored
+      30%  Equal                   377/377          0.0%
+      30%  Stall-opt               377/377          0.0%
+      50%  Equal                   633/633          0.0%
+      50%  Stall-opt               633/633          0.0%
+      70%  Equal                   877/877          0.0%
+      70%  Stall-opt               877/877          0.0%
+      85%  Equal                  1072/1072         0.0%
+      85%  Stall-opt              1072/1072         0.0%
+      95%  Equal                  1155/1208         4.4%
+      95%  Stall-opt              1188/1208         1.7%
+
+--------------------------------------------------------------------------------
+2c. METASTABILITY PROBE — does the queue outlive the episode?
+--------------------------------------------------------------------------------
+    Constant BW with ONE injected 60s degradation (depth 2.3), then full
+    bandwidth recovery at t=360s. Drain time = how long after recovery N
+    takes to return to its pre-episode level. Persistence = drain / 60s.
+    load 70%: preN=2.72 duringN=20.00 peakN=42  -> queue OUTLIVES its 60s cause: drains in 94s (1.57x the episode)
+    load 85%: preN=10.78 duringN=46.85 peakN=68  -> queue OUTLIVES its 60s cause: drains in 155s (2.58x the episode)
+    load 95%: preN=28.53 duringN=61.48 peakN=76  -> INTRINSIC INSTABILITY — N already climbing pre-episode (N 22.0->35.1); load exceeds effective capacity, not episode-induced
+
+--------------------------------------------------------------------------------
+2d. STALL-OPT vs EQUAL under feedback — BOTH metrics (Correction 2)
+--------------------------------------------------------------------------------
+  Two different comparisons, reported side by side:
+   - ABSOLUTE: cell-4 (queued+bimodal) mean added TTFT, SO vs EQ.
+   - RATIO:    degradation ratio cell4/cell3 (bimodal/constant, queued),
+               SO vs EQ. This is the Part-1 'inversion' metric.
+      Load |   EQ abs   SO abs  SO/EQ abs winner | EQ deg SO deg  inversion?
+      30% |   1174.7   1093.0  0.930         SO |  1.122  1.191    SO worse
+      50% |   1958.9   1816.1  0.927         SO |  1.164  1.226    SO worse
+      70% |   4445.2   4041.5  0.909         SO |  1.304  1.428    SO worse
+      85% |  10667.6   8686.2  0.814         SO |  1.189  1.305    SO worse
+      95% |  41144.9  29149.7  0.708         SO |  1.040  1.312    SO worse
+
+  Reading: absolute and ratio measure different things and need not
+  agree. Under feedback (non-censored loads) Stall-opt has LOWER absolute
+  added TTFT than Equal, yet a HIGHER degradation ratio — i.e. Stall-opt
+  is both better on average and more sensitive to variance. Same pattern
+  as the fixed-N result; the ratio inversion holds, it does not reverse.
+
