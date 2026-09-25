@@ -1,0 +1,10 @@
+Extended Q(N) sweep — 20260918T210728Z
+GPU: NVIDIA H100 NVL, 345 MHz, 1785 MHz, 63.57 W, 400.00 W
+SM clocks: n=35807 samples, 855MHz:9%, 870MHz:7%, 840MHz:6%, 885MHz:5%, 825MHz:5%
+
+Linear fit: slope = 1.0279 (RMSE 1.7833)
+  cf. job 155248 slope = 0.85
+Quadratic: a=1.0265, b=0.000026 (RMSE 1.7832)
+Power law: alpha=1.0338, beta=0.9979 (RMSE 1.7850)
+Max N measured: 64
+Per-length slopes: {4096: 1.1074717670396417, 16384: 0.9942220134312539, 32768: 0.9818988408229536}

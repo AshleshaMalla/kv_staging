@@ -1,0 +1,87 @@
+Job 157206 on rpg-93-6 at 2026-09-21T03:02:28Z
+
+
+================================================================================
+TASK 1: Seed the feedback four-cell interaction (30 seeds)
+================================================================================
+  Experiment B (fixed N=4): DETERMINISTIC — no seeding needed.
+  Uses 200 start-time offsets over a deterministic bimodal trace.
+
+  Load 30% (0.477 req/s):
+    Interaction (Stall-opt): mean=+36.2, median=+31.8, std=32.6
+    Bootstrap 95% CI: [+25.4, +48.3]
+    Sign: 29/30 positive (super-additive), 1/30 negative
+    CI excludes zero: YES → SUPER-ADDITIVE
+
+  Load 50% (0.795 req/s):
+    Interaction (Stall-opt): mean=+166.8, median=+139.2, std=118.0
+    Bootstrap 95% CI: [+127.2, +209.0]
+    Sign: 28/30 positive (super-additive), 2/30 negative
+    CI excludes zero: YES → SUPER-ADDITIVE
+
+  Load 70% (1.113 req/s):
+    Interaction (Stall-opt): mean=+873.6, median=+769.5, std=496.4
+    Bootstrap 95% CI: [+709.5, +1053.7]
+    Sign: 30/30 positive (super-additive), 0/30 negative
+    CI excludes zero: YES → SUPER-ADDITIVE
+
+
+================================================================================
+TASK 2: Convexity baseline (no layer pipeline, no overlap)
+================================================================================
+  Baseline: simple queue with fair-share BW, same compute model,
+  no per-layer pipeline, no bandwidth allocation policy.
+
+  Load 30%:
+    Simulator:  mean=+36.2 ms, std=32.6, CI=[+25.4, +48.3]
+    Baseline:   mean=+29.4 ms, std=34.4, CI=[+17.7, +42.3]
+    Sim-Base:   mean=+6.8 ms, CI=[+3.1, +10.6]
+    → Baseline is SUPER-ADDITIVE (CI excludes zero)
+    → Simulator EXCEEDS baseline: KV-specific contribution
+
+  Load 50%:
+    Simulator:  mean=+166.8 ms, std=118.0, CI=[+127.2, +209.0]
+    Baseline:   mean=+189.1 ms, std=130.7, CI=[+143.8, +236.0]
+    Sim-Base:   mean=-22.4 ms, CI=[-33.8, -10.5]
+    → Baseline is SUPER-ADDITIVE (CI excludes zero)
+    → Simulator BELOW baseline: overlap absorbs some convexity
+
+  Load 70%:
+    Simulator:  mean=+873.6 ms, std=496.4, CI=[+709.5, +1053.7]
+    Baseline:   mean=+1020.8 ms, std=460.7, CI=[+866.1, +1184.4]
+    Sim-Base:   mean=-147.2 ms, CI=[-245.8, -49.5]
+    → Baseline is SUPER-ADDITIVE (CI excludes zero)
+    → Simulator BELOW baseline: overlap absorbs some convexity
+
+
+================================================================================
+TASK 3: Conditional-overlap sweep (fixed N=4)
+================================================================================
+  Sweep prefetch depth from 0 (no overlap) to 32 (full unconditional).
+  Report interaction for Stall-opt, Workload A.
+
+  Prefetch          c1          c2          c3          c4   Interaction          Sign
+  no overlap      2839.4      3875.3      8852.7      9457.8        -430.8  sub-additive
+       P=1      2839.4      3875.3      8852.7      9457.8        -430.8  sub-additive
+       P=2      2918.0      3954.2      8980.7      9599.5        -417.4  sub-additive
+       P=4      3075.2      4111.4      9236.7      9883.8        -389.1  sub-additive
+       P=8      3389.6      4425.3      9748.7     10453.2        -331.2  sub-additive
+      P=16      4018.3      5054.5     10772.8     11590.8        -218.1  sub-additive
+      P=24      4647.1      5683.7     11796.8     12727.9        -105.5  sub-additive
+      full      5275.8      6313.1     12820.8     13861.6          +3.5  SUPER-additive
+
+  Interpretation:
+  - P=0 (no overlap): if sub-additive, the mechanism is NOT overlap-dependent
+  - P=32 (full): matches the unconditional model
+  - If sub-additivity flips between P=0 and P=32: overlap is the mechanism
+  - Realistic prefetch: P=1 or P=2 (one or two layers ahead)
+
+================================================================================
+VERDICT
+================================================================================
+  Read the three sections above and state:
+  1. Is super-additivity in the feedback regime confirmed across seeds?
+  2. Does the convexity baseline reproduce it?
+  3. Does sub-additivity in fixed-N survive conditional overlap?
+
+Done at 2026-09-21T03:02:52Z

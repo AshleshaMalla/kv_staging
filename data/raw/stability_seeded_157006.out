@@ -1,0 +1,211 @@
+Job 157006 on rpg-93-1 at 2026-09-19T19:22:28Z
+
+================================================================================
+SEEDED REPLICATION (slope=1.0, 5 seeds)
+================================================================================
+Q_SLOPE = 1.0
+Capacity = 1.590 req/s
+Seeds: [7, 13, 42, 97, 131]
+
+PART 1: Saturation boundary (65-85%, 5 seeds, no episode)
+--------------------------------------------------------------------------------
+    Load    Seed   meanN   maxN     w1     w4   Cens       Verdict
+    65%       7     4.0     23    4.2    3.5   0.0%      marginal
+    65%      13     3.5     14    3.6    2.3   0.0%      marginal
+    65%      42     3.4     18    2.1    2.1   0.0%        stable
+    65%      97     4.0     24    3.9    8.8   0.0%      UNSTABLE
+    65%     131     4.3     21    6.3    3.6   0.0%      marginal
+    65%     ALL  → 1/5 stable, 1/5 unstable, 3/5 marginal
+
+    66%       7     3.8     16    3.7    3.3   0.0%        stable
+    66%      13     4.2     17    3.9    3.0   0.0%      marginal
+    66%      42     3.5     15    2.3    2.6   0.0%        stable
+    66%      97     4.5     24    4.8    9.6   0.0%      UNSTABLE
+    66%     131     4.6     25    8.3    3.3   0.0%      marginal
+    66%     ALL  → 2/5 stable, 1/5 unstable, 2/5 marginal
+
+    67%       7     3.8     18    3.0    2.3   0.0%      marginal
+    67%      13     3.8     23    3.7    1.9   0.0%      marginal
+    67%      42     3.6     17    2.8    2.2   0.0%      marginal
+    67%      97     4.7     22    5.3    8.6   0.0%      UNSTABLE
+    67%     131     4.8     25    7.7    4.1   0.0%      marginal
+    67%     ALL  → 0/5 stable, 1/5 unstable, 4/5 marginal
+
+    68%       7     4.7     19    3.9    2.9   0.0%      marginal
+    68%      13     4.4     20    4.9    2.4   0.0%      marginal
+    68%      42     3.3     18    2.4    2.1   0.0%        stable
+    68%      97     4.5     22    5.3    7.8   0.0%      UNSTABLE
+    68%     131     4.9     24    8.1    3.5   0.0%      marginal
+    68%     ALL  → 1/5 stable, 1/5 unstable, 3/5 marginal
+
+    69%       7     5.6     24    3.9    4.1   0.0%        stable
+    69%      13     4.4     19    4.8    1.8   0.0%      marginal
+    69%      42     3.9     16    3.0    3.2   0.0%        stable
+    69%      97     5.1     18    4.7    7.6   0.0%      UNSTABLE
+    69%     131     5.1     25    9.5    3.9   0.0%      marginal
+    69%     ALL  → 2/5 stable, 1/5 unstable, 2/5 marginal
+
+    70%       7     5.7     22    4.8    4.6   0.0%        stable
+    70%      13     5.1     19    5.1    2.6   0.0%      marginal
+    70%      42     4.1     14    3.8    4.3   0.0%        stable
+    70%      97     4.7     21    5.1    5.3   0.0%        stable
+    70%     131     5.0     20    8.5    3.8   0.0%      marginal
+    70%     ALL  → 3/5 stable, 0/5 unstable, 2/5 marginal
+
+    71%       7     5.1     25    3.4    4.2   0.0%      marginal
+    71%      13     5.5     19    5.3    2.5   0.0%      marginal
+    71%      42     4.6     22    3.9    4.4   0.0%        stable
+    71%      97     5.0     20    5.3    5.6   0.0%        stable
+    71%     131     5.1     21    7.3    3.3   0.0%      marginal
+    71%     ALL  → 2/5 stable, 0/5 unstable, 3/5 marginal
+
+    72%       7     5.8     26    3.5    4.8   0.0%      UNSTABLE
+    72%      13     5.6     19    5.1    2.5   0.0%      marginal
+    72%      42     5.1     29    3.4    3.1   0.0%        stable
+    72%      97     5.5     18    5.9    5.6   0.0%        stable
+    72%     131     6.5     24    8.4    3.6   0.0%      marginal
+    72%     ALL  → 2/5 stable, 1/5 unstable, 2/5 marginal
+
+    73%       7     5.4     21    3.8    6.0   0.0%      UNSTABLE
+    73%      13     5.8     21    5.3    2.3   0.0%      marginal
+    73%      42     5.1     28    4.3    2.7   0.0%      marginal
+    73%      97     6.7     22    8.2    5.2   0.0%      marginal
+    73%     131     7.6     27    9.7    4.9   0.0%      marginal
+    73%     ALL  → 0/5 stable, 1/5 unstable, 4/5 marginal
+
+    74%       7     6.2     23    6.5    6.8   0.0%        stable
+    74%      13     6.6     21    7.7    2.3   0.0%      marginal
+    74%      42     6.4     36    5.1    3.0   0.0%      marginal
+    74%      97     7.3     23    8.3    5.2   0.0%      marginal
+    74%     131     9.2     28   12.6    6.3   0.0%      marginal
+    74%     ALL  → 1/5 stable, 0/5 unstable, 4/5 marginal
+
+    75%       7     6.9     28    7.4    8.7   0.0%      marginal
+    75%      13     6.9     23    8.7    3.8   0.0%      marginal
+    75%      42     6.4     33    4.0    2.2   0.0%      marginal
+    75%      97     7.5     26   10.4    3.9   0.0%      marginal
+    75%     131     9.9     28   13.0    7.5   0.0%      marginal
+    75%     ALL  → 0/5 stable, 0/5 unstable, 5/5 marginal
+
+    76%       7     7.7     36    7.0   12.2   0.0%      UNSTABLE
+    76%      13     8.3     27   10.5    4.2   0.0%      marginal
+    76%      42     8.5     38    3.6    2.1   0.0%      marginal
+    76%      97     8.1     28    9.1    4.4   0.0%      marginal
+    76%     131    10.8     33   16.3    6.9   0.0%      marginal
+    76%     ALL  → 0/5 stable, 1/5 unstable, 4/5 marginal
+
+    77%       7     9.9     31    9.3   15.0   0.0%      UNSTABLE
+    77%      13     8.9     30   11.9    4.6   0.0%      marginal
+    77%      42    11.1     38    4.2    3.0   0.0%      marginal
+    77%      97     7.9     31    7.3    4.5   0.0%      marginal
+    77%     131    12.1     34   19.3    6.9   0.0%      marginal
+    77%     ALL  → 0/5 stable, 1/5 unstable, 4/5 marginal
+
+    78%       7    11.0     40    8.9   17.0   0.0%      UNSTABLE
+    78%      13     9.7     31   13.3    4.7   0.0%      marginal
+    78%      42    13.5     40    4.2    4.3   0.0%        stable
+    78%      97     8.7     33    8.2    4.7   0.0%      marginal
+    78%     131    12.6     36   19.7    7.5   0.0%      marginal
+    78%     ALL  → 1/5 stable, 1/5 unstable, 3/5 marginal
+
+    79%       7    11.3     36    9.7   17.8   0.0%      UNSTABLE
+    79%      13    10.8     30   13.7    4.8   0.0%      marginal
+    79%      42    13.7     42    3.7    4.2   0.0%        stable
+    79%      97     9.2     38    9.0    4.7   0.0%      marginal
+    79%     131    12.7     34   19.9    9.2   0.0%      marginal
+    79%     ALL  → 1/5 stable, 1/5 unstable, 3/5 marginal
+
+    80%       7    12.1     38   10.2   18.5   0.0%      UNSTABLE
+    80%      13    15.4     37   18.9    5.4   0.0%      marginal
+    80%      42    16.1     48    5.2    4.2   0.0%      marginal
+    80%      97    11.6     40   11.1    6.5   0.0%      marginal
+    80%     131    13.8     38   20.5   11.2   0.0%      marginal
+    80%     ALL  → 0/5 stable, 1/5 unstable, 4/5 marginal
+
+    81%       7    15.0     38   15.0   17.9   0.0%      marginal
+    81%      13    18.5     44   22.2    4.9   0.0%      marginal
+    81%      42    15.8     51    5.8    6.6   0.0%        stable
+    81%      97    11.0     36    9.0    6.9   0.0%      marginal
+    81%     131    18.1     43   25.6   15.2   0.0%      marginal
+    81%     ALL  → 1/5 stable, 0/5 unstable, 4/5 marginal
+
+    82%       7    17.0     38   16.2   18.8   0.0%      marginal
+    82%      13    21.4     52   23.9    6.7   0.0%      marginal
+    82%      42    17.6     54    6.2    6.8   0.0%        stable
+    82%      97    12.3     39    9.2    7.7   0.0%      marginal
+    82%     131    23.6     47   27.5   24.9   0.0%        stable
+    82%     ALL  → 2/5 stable, 0/5 unstable, 3/5 marginal
+
+    83%       7    19.1     41   18.6   18.4   0.0%        stable
+    83%      13    28.1     59   29.6   11.6   0.0%      marginal
+    83%      42    17.8     59    8.1    8.6   0.0%        stable
+    83%      97    14.1     45   10.2    6.6   0.0%      marginal
+    83%     131    30.3     52   31.0   35.9   0.3%      marginal
+    83%     ALL  → 2/5 stable, 0/5 unstable, 3/5 marginal
+
+    84%       7    20.1     40   14.6   23.5   0.0%      UNSTABLE
+    84%      13    29.4     61   28.0   16.7   0.0%      marginal
+    84%      42    20.7     60   10.4   12.2   0.0%      marginal
+    84%      97    16.1     46   13.6    7.3   0.0%      marginal
+    84%     131    36.1     59   32.9   46.3   1.3%      UNSTABLE
+    84%     ALL  → 0/5 stable, 2/5 unstable, 3/5 marginal
+
+    85%       7    28.7     50   19.7   35.6   0.5%      UNSTABLE
+    85%      13    35.8     67   31.5   27.4   0.0%        stable
+    85%      42    22.8     62   11.2   14.3   0.1%      marginal
+    85%      97    19.0     52   17.4    8.5   0.0%      marginal
+    85%     131    43.4     71   36.2   59.0   2.0%      UNSTABLE
+    85%     ALL  → 1/5 stable, 2/5 unstable, 2/5 marginal
+
+
+  SATURATION SUMMARY:
+    Load   Stable   Unstable   Marginal   meanN        Classification
+    65%      1/5        1/5        3/5     3.8          transitional
+    66%      2/5        1/5        2/5     4.1          transitional
+    67%      0/5        1/5        4/5     4.2          transitional
+    68%      1/5        1/5        3/5     4.4          transitional
+    69%      2/5        1/5        2/5     4.8          transitional
+    70%      3/5        0/5        2/5     4.9                STABLE
+    71%      2/5        0/5        3/5     5.1          transitional
+    72%      2/5        1/5        2/5     5.7          transitional
+    73%      0/5        1/5        4/5     6.1          transitional
+    74%      1/5        0/5        4/5     7.1          transitional
+    75%      0/5        0/5        5/5     7.5          transitional
+    76%      0/5        1/5        4/5     8.7          transitional
+    77%      0/5        1/5        4/5    10.0          transitional
+    78%      1/5        1/5        3/5    11.1          transitional
+    79%      1/5        1/5        3/5    11.5          transitional
+    80%      0/5        1/5        4/5    13.8          transitional
+    81%      1/5        0/5        4/5    15.7          transitional
+    82%      2/5        0/5        3/5    18.4          transitional
+    83%      2/5        0/5        3/5    21.9          transitional
+    84%      0/5        2/5        3/5    24.5          transitional
+    85%      1/5        2/5        2/5    30.0          transitional
+
+
+PART 2: 70% metastability (5 seeds, episode + no-episode control)
+--------------------------------------------------------------------------------
+  No-episode control (constant BW):
+    Seed   meanN     w1     w4       Verdict
+       7     5.7    4.8    4.6    STATIONARY
+      13     5.1    5.1    2.6      marginal
+      42     4.1    3.8    4.3    STATIONARY
+      97     4.7    5.1    5.3    STATIONARY
+     131     5.0    8.5    3.8      marginal
+  → 3/5 stationary
+
+  Episode injection (single 60s degradation at t=300):
+    Seed   preN   durN   peakN   drain(s)   persist
+       7    3.6   21.1      48        130     2.16x
+      13    3.1   29.0      44        187     3.12x
+      42    2.6    5.9      17         58     0.97x
+      97    7.7   18.2      33         36     0.61x
+     131   10.2    8.0      20          6     0.09x
+
+  Drain time: mean=83s, std=74s, range=[6, 187]s
+  Persistence: mean=1.39x, range=[0.09x, 3.12x]
+  Peak N: range=[17, 48], all within measured N<=64
+  Drained: 5/5 seeds
+
+
+Done at 2026-09-19T19:22:32Z

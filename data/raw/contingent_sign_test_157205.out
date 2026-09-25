@@ -1,0 +1,44 @@
+Job 157205 on rpg-93-6 at 2026-09-21T03:00:45Z
+
+
+================================================================================
+TASK 1: Seed the feedback four-cell interaction (30 seeds)
+================================================================================
+  Experiment B (fixed N=4): DETERMINISTIC — no seeding needed.
+  Uses 200 start-time offsets over a deterministic bimodal trace.
+
+  Load 30% (0.477 req/s):
+    Interaction (Stall-opt): mean=+36.2, median=+31.8, std=32.6
+    Bootstrap 95% CI: [+25.4, +48.3]
+    Sign: 29/30 positive (super-additive), 1/30 negative
+    CI excludes zero: YES → SUPER-ADDITIVE
+
+  Load 50% (0.795 req/s):
+    Interaction (Stall-opt): mean=+166.8, median=+139.2, std=118.0
+    Bootstrap 95% CI: [+127.2, +209.0]
+    Sign: 28/30 positive (super-additive), 2/30 negative
+    CI excludes zero: YES → SUPER-ADDITIVE
+
+  Load 70% (1.113 req/s):
+    Interaction (Stall-opt): mean=+873.6, median=+769.5, std=496.4
+    Bootstrap 95% CI: [+709.5, +1053.7]
+    Sign: 30/30 positive (super-additive), 0/30 negative
+    CI excludes zero: YES → SUPER-ADDITIVE
+
+
+================================================================================
+TASK 2: Convexity baseline (no layer pipeline, no overlap)
+================================================================================
+  Baseline: simple queue with fair-share BW, same compute model,
+  no per-layer pipeline, no bandwidth allocation policy.
+
+  Load 30%:
+Traceback (most recent call last):
+  File "/mnt/REPACSS/home/asmalla/kv_staging/scripts/contingent_sign_test.py", line 398, in <module>
+    main()
+  File "/mnt/REPACSS/home/asmalla/kv_staging/scripts/contingent_sign_test.py", line 383, in main
+    task2_convexity_baseline()
+  File "/mnt/REPACSS/home/asmalla/kv_staging/scripts/contingent_sign_test.py", line 211, in task2_convexity_baseline
+    s1, _ = simulate(rate, const, "Stall-opt", HORIZON, seed, queued=False)
+    ^^^^^
+ValueError: too many values to unpack (expected 2)

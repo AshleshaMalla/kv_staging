@@ -1,0 +1,310 @@
+=== Job 160495 on rpg-93-3 at 2026-09-24T19:52:17-05:00 ===
+0, NVIDIA H100 NVL, 345 MHz, 1785 MHz, 61.62 W, 400.00 W
+1, NVIDIA H100 NVL, 345 MHz, 1785 MHz, 67.25 W, 400.00 W
+2, NVIDIA H100 NVL, 345 MHz, 1785 MHz, 63.10 W, 400.00 W
+3, NVIDIA H100 NVL, 345 MHz, 1785 MHz, 61.11 W, 400.00 W
+
+CUDA_HOME=/opt/apps/nfs/spack-1.1.0/opt/spack/linux-sapphirerapids/cuda-12.9.1-tio2hjc6xnw4bpsn37tz5fmwkz4dabp7
+nvcc: /opt/apps/nfs/spack-1.1.0/opt/spack/linux-sapphirerapids/cuda-12.9.1-tio2hjc6xnw4bpsn37tz5fmwkz4dabp7/bin/nvcc
+
+=== Memory diagnostics ===
+Slurm allocated CPUs: 1
+Slurm --mem requested: 512000
+Cgroup memory.max: unknown
+Physical RAM: 503 GiB
+Available RAM: 481 GiB
+
+=== Pre-warming FlashInfer JIT cache (single GPU) ===
+[GPU 0] Starting worker, lengths=[16384, 32768], reps=5
+INFO 09-24 19:52:38 [api_utils.py:286] non-default args: {'max_model_len': 33000, 'enable_prefix_caching': False, 'gpu_memory_utilization': 0.85, 'max_num_batched_tokens': 32768, 'disable_log_stats': True, 'enforce_eager': True, 'model': '/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B'}
+INFO 09-24 19:52:38 [model.py:684] Resolved architecture: LlamaForCausalLM
+INFO 09-24 19:52:38 [model.py:2021] Using max model len 33000
+INFO 09-24 19:52:38 [scheduler.py:277] Chunked prefill is enabled with max_num_batched_tokens=32768.
+WARNING 09-24 19:52:38 [vllm.py:1371] Enforce eager set, disabling torch.compile and CUDAGraphs. This is equivalent to setting -cc.mode=none -cc.cudagraph_mode=none
+WARNING 09-24 19:52:38 [vllm.py:1406] Inductor compilation was disabled by user settings, optimizations settings that are only active during inductor compilation will be ignored.
+INFO 09-24 19:52:38 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 09-24 19:52:39 [vllm.py:1585] Cudagraph is disabled under eager mode
+INFO 09-24 19:52:39 [compilation.py:329] Enabled custom fusions: norm_quant, act_quant
+(EngineCore pid=3140639) INFO 09-24 19:52:41 [core.py:123] Initializing a V1 LLM engine (v0.29.0) with config: model='/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B', speculative_config=None, tokenizer='/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=33000, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, quantization_config=None, enforce_eager=True, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B, enable_prefix_caching=False, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.NONE: 0>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['all'], 'ir_enable_torch_wrap': False, 'splitting_ops': [], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'compile_sizes': [], 'compile_ranges_endpoints': [32768], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.NONE: 0>, 'cudagraph_num_of_warmups': 0, 'cudagraph_capture_sizes': [], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': True, 'fuse_act_quant': True, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 0, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native']), enable_flashinfer_autotune=True, enable_cutedsl_warmup=True, enable_jit_warmup=True, enable_bf16x3_router_gemm=False, moe_backend='auto', linear_backend='auto')
+(EngineCore pid=3140639) INFO 09-24 19:52:45 [parallel_state.py:1775] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_921ea86e74a54834b5cefed9caea15db backend=nccl
+(EngineCore pid=3140639) INFO 09-24 19:52:45 [parallel_state.py:2119] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=3140639) INFO 09-24 19:52:45 [gpu_worker.py:429] Using V2 Model Runner
+(EngineCore pid=3140639) INFO 09-24 19:52:48 [model_runner.py:382] Loading model from scratch...
+(EngineCore pid=3140639) INFO 09-24 19:52:50 [cuda.py:492] Using FLASH_ATTN attention backend out of potential backends: ['FLASH_ATTN', 'FLASHINFER', 'TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=3140639) INFO 09-24 19:52:50 [flash_attn.py:897] Using FlashAttention version 3
+(EngineCore pid=3140639) INFO 09-24 19:52:50 [weight_utils.py:863] Filesystem type for checkpoints: NFS4. Checkpoint size: 14.96 GiB. Available RAM: 478.68 GiB.
+(EngineCore pid=3140639) INFO 09-24 19:52:50 [weight_utils.py:825] Prefetching checkpoint files into page cache started (in background, num_threads=8, block_size=16777216 bytes)
+(EngineCore pid=3140639) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(EngineCore pid=3140639) INFO 09-24 19:52:53 [weight_utils.py:797] Prefetching checkpoint files: 10% (1/4)
+(EngineCore pid=3140639) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:05<00:17,  5.84s/it]
+(EngineCore pid=3140639) INFO 09-24 19:52:56 [weight_utils.py:797] Prefetching checkpoint files: 20% (2/4)
+(EngineCore pid=3140639) INFO 09-24 19:52:58 [weight_utils.py:797] Prefetching checkpoint files: 30% (3/4)
+(EngineCore pid=3140639) INFO 09-24 19:52:58 [weight_utils.py:797] Prefetching checkpoint files: 40% (4/4)
+(EngineCore pid=3140639) INFO 09-24 19:52:58 [weight_utils.py:820] Prefetching checkpoint files into page cache finished in 7.61s
+(EngineCore pid=3140639) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:07<00:07,  3.54s/it]
+(EngineCore pid=3140639) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:08<00:02,  2.29s/it]
+(EngineCore pid=3140639) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:08<00:00,  1.49s/it]
+(EngineCore pid=3140639) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:08<00:00,  2.21s/it]
+(EngineCore pid=3140639) 
+(EngineCore pid=3140639) INFO 09-24 19:52:59 [default_loader.py:430] Loading weights took 8.87 seconds
+(EngineCore pid=3140639) INFO 09-24 19:53:00 [model_runner.py:404] Model loading took 15.0 GiB memory and 13.046758 seconds
+(EngineCore pid=3140639) INFO 09-24 19:53:00 [topk_topp_sampler.py:62] Using FlashInfer for top-p & top-k sampling.
+(EngineCore pid=3140639) INFO 09-24 19:53:00 [utils.py:306] Using LBNHC KV cache layout.
+(EngineCore pid=3140639) INFO 09-24 19:53:03 [gpu_worker.py:625] Available KV cache memory: 59.93 GiB
+(EngineCore pid=3140639) INFO 09-24 19:53:03 [kv_cache_utils.py:2032] GPU KV cache size: 490,857 tokens, Maximum concurrency for 33,000 tokens per request: 14.87x
+(EngineCore pid=3140639) INFO 09-24 19:53:03 [kernel_warmup.py:124] JIT kernel warmup starting.
+(EngineCore pid=3140639) INFO 09-24 19:53:03 [kernel_warmup.py:134] JIT kernel warmup finished in 0.00s.
+(EngineCore pid=3140639) INFO 09-24 19:53:05 [kernel_warmup.py:309] Using FlashInfer autotune cache file: /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/45c71858163f8994aa2fbe0c99f49c8e1d5c04d6c4951b704d268fd42a6a80f6/autotune_configs.json
+(EngineCore pid=3140639) 2026-09-24 19:53:06,022 - INFO - autotuner.py:2789 - flashinfer.jit: [Autotuner]: Loaded 0 configs from /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/45c71858163f8994aa2fbe0c99f49c8e1d5c04d6c4951b704d268fd42a6a80f6/autotune_configs.json
+(EngineCore pid=3140639) 2026-09-24 19:53:06,022 - INFO - autotuner.py:972 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+(EngineCore pid=3140639) INFO 09-24 19:53:06 [kernel_warmup.py:266] Running FlashInfer autotune with 32768 tokens.
+(EngineCore pid=3140639) 2026-09-24 19:53:06,057 - INFO - autotuner.py:995 - flashinfer.jit: [Autotuner]: Autotuning process ends
+(EngineCore pid=3140639) 2026-09-24 19:53:06,184 - INFO - autotuner.py:2652 - flashinfer.jit: [Autotuner]: Saved 0 configs to /mnt/REPACSS/home/asmalla/.cache/vllm/flashinfer_autotune_cache/0.6.18/90a/45c71858163f8994aa2fbe0c99f49c8e1d5c04d6c4951b704d268fd42a6a80f6/autotune_configs.json (0 new, 0 from previous config)
+(EngineCore pid=3140639) INFO 09-24 19:53:06 [gpu_worker.py:860] Free memory on device (92.56/93.08 GiB) on startup. Desired GPU memory utilization is (0.85, 79.12 GiB). Actual usage is 15.81 GiB for consumed memory (weights + non-torch), 3.38 GiB for peak activation, and 0.0 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=64196822938` (59.79 GiB) to fit into requested memory, or `--kv-cache-memory=78635576832` (73.24 GiB) to fully utilize gpu memory. Current kv cache memory in use is 59.93 GiB.
+(EngineCore pid=3140639) INFO 09-24 19:53:09 [jit_monitor.py:85] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(EngineCore pid=3140639) INFO 09-24 19:53:09 [core.py:368] init engine (profile, create kv cache, warmup model) took 9.02 s
+(EngineCore pid=3140639) INFO 09-24 19:53:09 [kernel.py:369] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['vllm_c', 'native'], fused_add_rms_norm=['vllm_c', 'native'])
+INFO 09-24 19:53:10 [hf.py:547] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+[GPU 0] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 0] L=16384: mean=0.6938s stdev=0.0225s tput=23616 tok/s
+[GPU 0] L=32768: mean=1.7210s stdev=0.0053s tput=19040 tok/s
+INFO 09-24 19:53:25 [utils.py:620] [shutdown] Process manager: send sigterm to process EngineCore
+(EngineCore pid=3140639) INFO 09-24 19:53:25 [core.py:1350] [shutdown] EngineCore: trigger received signal=SIGTERM
+(EngineCore pid=3140639) INFO 09-24 19:53:25 [core.py:1501] [shutdown] EngineCore: start mode=abort timeout=0s
+(EngineCore pid=3140639) INFO 09-24 19:53:25 [core.py:1532] [shutdown] EngineCore: request processing complete; starting resource teardown
+(EngineCore pid=3140639) INFO 09-24 19:53:25 [core.py:1363] [shutdown] EngineCore: exiting busy loop
+[GPU 0] Done, results at data/raw/multigpu_scaling_20260925T005219Z/prewarm_gpu0.json
+=== Pre-warm complete ===
+
+FlashInfer sampling cache: OK
+
+
+========================================
+  n_gpus = 1
+========================================
+  GPU 0: OK
+[GPU 0] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 0] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 0] L=16384: mean=0.6925s stdev=0.0262s tput=23659 tok/s
+[GPU 0] L=32768: mean=1.7219s stdev=0.0069s tput=19030 tok/s
+[GPU 0] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu0_n1.json
+  Host memory after G=1: 23G used / 503G total / 480G available
+  All 1 GPU(s) succeeded
+
+========================================
+  n_gpus = 2
+========================================
+  GPU 0: OK
+[GPU 0] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 0] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 0] L=16384: mean=0.6948s stdev=0.0235s tput=23580 tok/s
+[GPU 0] L=32768: mean=1.7185s stdev=0.0029s tput=19068 tok/s
+[GPU 0] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu0_n2.json
+  GPU 1: OK
+[GPU 1] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 1] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 1] L=16384: mean=0.7127s stdev=0.0304s tput=22987 tok/s
+[GPU 1] L=32768: mean=1.7758s stdev=0.0078s tput=18453 tok/s
+[GPU 1] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu1_n2.json
+  Host memory after G=2: 22G used / 503G total / 480G available
+  All 2 GPU(s) succeeded
+
+========================================
+  n_gpus = 3
+========================================
+  GPU 0: OK
+[GPU 0] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 0] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 0] L=16384: mean=0.7015s stdev=0.0315s tput=23356 tok/s
+[GPU 0] L=32768: mean=1.7205s stdev=0.0042s tput=19046 tok/s
+[GPU 0] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu0_n3.json
+  GPU 1: OK
+[GPU 1] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 1] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 1] L=16384: mean=0.7179s stdev=0.0297s tput=22822 tok/s
+[GPU 1] L=32768: mean=1.7840s stdev=0.0157s tput=18368 tok/s
+[GPU 1] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu1_n3.json
+  GPU 2: OK
+[GPU 2] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 2] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 2] L=16384: mean=0.7131s stdev=0.0252s tput=22977 tok/s
+[GPU 2] L=32768: mean=1.7795s stdev=0.0138s tput=18414 tok/s
+[GPU 2] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu2_n3.json
+  Host memory after G=3: 22G used / 503G total / 480G available
+  All 3 GPU(s) succeeded
+
+========================================
+  n_gpus = 4
+========================================
+  GPU 0: OK
+[GPU 0] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 0] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 0] L=16384: mean=0.6999s stdev=0.0262s tput=23409 tok/s
+[GPU 0] L=32768: mean=1.7299s stdev=0.0144s tput=18942 tok/s
+[GPU 0] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu0_n4.json
+  GPU 1: OK
+[GPU 1] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 1] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 1] L=16384: mean=0.7146s stdev=0.0282s tput=22929 tok/s
+[GPU 1] L=32768: mean=1.7898s stdev=0.0255s tput=18308 tok/s
+[GPU 1] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu1_n4.json
+  GPU 2: OK
+[GPU 2] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 2] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 2] L=16384: mean=0.7170s stdev=0.0378s tput=22852 tok/s
+[GPU 2] L=32768: mean=1.7826s stdev=0.0219s tput=18382 tok/s
+[GPU 2] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu2_n4.json
+  GPU 3: OK
+[GPU 3] Starting worker, lengths=[16384, 32768], reps=5
+[GPU 3] vLLM 0.29.0 loaded, host RSS=1.5 GiB
+[GPU 3] L=16384: mean=0.6868s stdev=0.0348s tput=23856 tok/s
+[GPU 3] L=32768: mean=1.7069s stdev=0.0199s tput=19198 tok/s
+[GPU 3] Done, results at data/raw/multigpu_scaling_20260925T005219Z/gpu3_n4.json
+  Host memory after G=4: 22G used / 503G total / 480G available
+  All 4 GPU(s) succeeded
+
+=== Raw results in data/raw/multigpu_scaling_20260925T005219Z ===
+total 1252
+drwxr-xr-x+  2 asmalla REPACSS    4096 Sep 24 20:00 .
+drwxr-xr-x+ 30 asmalla REPACSS    4096 Sep 24 19:52 ..
+-rw-r--r--+  1 asmalla REPACSS     876 Sep 24 19:54 gpu0_n1.json
+-rw-r--r--+  1 asmalla REPACSS   11072 Sep 24 19:54 gpu0_n1.log
+-rw-r--r--+  1 asmalla REPACSS     874 Sep 24 19:55 gpu0_n2.json
+-rw-r--r--+  1 asmalla REPACSS   11074 Sep 24 19:55 gpu0_n2.log
+-rw-r--r--+  1 asmalla REPACSS     874 Sep 24 19:57 gpu0_n3.json
+-rw-r--r--+  1 asmalla REPACSS   11075 Sep 24 19:57 gpu0_n3.log
+-rw-r--r--+  1 asmalla REPACSS     872 Sep 24 20:00 gpu0_n4.json
+-rw-r--r--+  1 asmalla REPACSS   11075 Sep 24 20:00 gpu0_n4.log
+-rw-r--r--+  1 asmalla REPACSS     874 Sep 24 19:55 gpu1_n2.json
+-rw-r--r--+  1 asmalla REPACSS   11074 Sep 24 19:55 gpu1_n2.log
+-rw-r--r--+  1 asmalla REPACSS     874 Sep 24 19:57 gpu1_n3.json
+-rw-r--r--+  1 asmalla REPACSS   11075 Sep 24 19:57 gpu1_n3.log
+-rw-r--r--+  1 asmalla REPACSS     875 Sep 24 20:00 gpu1_n4.json
+-rw-r--r--+  1 asmalla REPACSS   11075 Sep 24 20:00 gpu1_n4.log
+-rw-r--r--+  1 asmalla REPACSS     875 Sep 24 19:57 gpu2_n3.json
+-rw-r--r--+  1 asmalla REPACSS   11075 Sep 24 19:57 gpu2_n3.log
+-rw-r--r--+  1 asmalla REPACSS     876 Sep 24 20:00 gpu2_n4.json
+-rw-r--r--+  1 asmalla REPACSS   11075 Sep 24 20:00 gpu2_n4.log
+-rw-r--r--+  1 asmalla REPACSS     868 Sep 24 20:00 gpu3_n4.json
+-rw-r--r--+  1 asmalla REPACSS   11075 Sep 24 20:00 gpu3_n4.log
+-rw-r--r--+  1 asmalla REPACSS 1126350 Sep 24 20:00 gpu_clocks.csv
+-rw-r--r--+  1 asmalla REPACSS   11078 Sep 24 19:53 prewarm.log
+-rw-r--r--+  1 asmalla REPACSS     875 Sep 24 19:53 prewarm_gpu0.json
+
+================================================================================
+MULTI-GPU PREFILL SCALING ANALYSIS
+================================================================================
+
+nGPU  GPU  Length   Mean(s)  Stdev(s)   Tput(tok/s)
+-------------------------------------------------------
+   1    0   16384    0.6925    0.0262         23659
+   1    0   32768    1.7219    0.0069         19030
+   2    0   16384    0.6948    0.0235         23580
+   2    0   32768    1.7185    0.0029         19068
+   2    1   16384    0.7127    0.0304         22987
+   2    1   32768    1.7758    0.0078         18453
+   3    0   16384    0.7015    0.0315         23356
+   3    0   32768    1.7205    0.0042         19046
+   3    1   16384    0.7179    0.0297         22822
+   3    1   32768    1.7840    0.0157         18368
+   3    2   16384    0.7131    0.0252         22977
+   3    2   32768    1.7795    0.0138         18414
+   4    0   16384    0.6999    0.0262         23409
+   4    0   32768    1.7299    0.0144         18942
+   4    1   16384    0.7146    0.0282         22929
+   4    1   32768    1.7898    0.0255         18308
+   4    2   16384    0.7170    0.0378         22852
+   4    2   32768    1.7826    0.0219         18382
+   4    3   16384    0.6868    0.0348         23856
+   4    3   32768    1.7069    0.0199         19198
+
+================================================================================
+AGGREGATE THROUGHPUT AND SCALING EFFICIENCY
+================================================================================
+
+nGPU  Length      Agg tput    1-GPU tput         Ideal  Efficiency  Per-GPU svc(s)
+--------------------------------------------------------------------------------
+   1   16384         23659         23659         23659     100.0%          0.6925
+   1   32768         19030         19030         19030     100.0%          1.7219
+   2   16384         46567         23659         47318      98.4%          0.7038
+   2   32768         37521         19030         38060      98.6%          1.7471
+   3   16384         69155         23659         70978      97.4%          0.7108
+   3   32768         55828         19030         57090      97.8%          1.7613
+   4   16384         93045         23659         94637      98.3%          0.7046
+   4   32768         74831         19030         76121      98.3%          1.7523
+
+================================================================================
+PER-GPU CLOCK AND POWER DISTRIBUTIONS
+================================================================================
+  GPU 0: 1785MHz:42%, 345MHz:40%, 1080MHz:2%, 1050MHz:2%, 1065MHz:2%  power=129.0W  range=[345, 1785] MHz
+  GPU 1: 345MHz:51%, 1785MHz:35%, 1020MHz:1%, 1050MHz:1%, 1035MHz:1%  power=119.0W  range=[345, 1785] MHz
+  GPU 2: 345MHz:61%, 1785MHz:30%, 1035MHz:1%, 1050MHz:1%, 1065MHz:1%  power=100.4W  range=[345, 1785] MHz
+  GPU 3: 345MHz:79%, 1785MHz:16%, 1110MHz:0%, 1035MHz:0%, 1770MHz:0%  power=79.3W  range=[345, 1785] MHz
+
+================================================================================
+NODE-LEVEL: HOW MANY GPUs BEFORE AGGREGATE RECOMPUTE > FETCH?
+================================================================================
+
+  Fetch model (per GPU when G GPUs fetch simultaneously):
+    T_fetch_per_tok(G) = G * S/BW_node + H + M
+    S=131072 bytes/tok, H=2.38 us/tok, M=0.006 us/tok
+    Storage BW is a per-node ceiling shared by G GPUs
+    PCIe H2D is per-GPU (each GPU has its own link)
+
+  Recompute: measured per-GPU service time from this experiment
+
+  L = 16384:
+           degraded G=1: recomp=     23659  fetch=     10416  ratio=2.271  RECOMPUTE
+           degraded G=2: recomp=     46567  fetch=     10547  ratio=4.415  RECOMPUTE
+           degraded G=3: recomp=     69155  fetch=     10591  ratio=6.530  RECOMPUTE
+           degraded G=4: recomp=     93045  fetch=     10614  ratio=8.767  RECOMPUTE
+          quiescent G=1: recomp=     23659  fetch=     18856  ratio=1.255  RECOMPUTE
+          quiescent G=2: recomp=     46567  fetch=     19290  ratio=2.414  RECOMPUTE
+          quiescent G=3: recomp=     69155  fetch=     19440  ratio=3.557  RECOMPUTE
+          quiescent G=4: recomp=     93045  fetch=     19515  ratio=4.768  RECOMPUTE
+      quiet_evening G=1: recomp=     23659  fetch=     27156  ratio=0.871  FETCH
+      quiet_evening G=2: recomp=     46567  fetch=     28065  ratio=1.659  RECOMPUTE
+      quiet_evening G=3: recomp=     69155  fetch=     28382  ratio=2.437  RECOMPUTE
+      quiet_evening G=4: recomp=     93045  fetch=     28543  ratio=3.260  RECOMPUTE
+       peak_1stream G=1: recomp=     23659  fetch=     34920  ratio=0.678  FETCH
+       peak_1stream G=2: recomp=     46567  fetch=     36438  ratio=1.278  RECOMPUTE
+       peak_1stream G=3: recomp=     69155  fetch=     36973  ratio=1.870  RECOMPUTE
+       peak_1stream G=4: recomp=     93045  fetch=     37247  ratio=2.498  RECOMPUTE
+
+  L = 32768:
+           degraded G=1: recomp=     19030  fetch=     10416  ratio=1.827  RECOMPUTE
+           degraded G=2: recomp=     37521  fetch=     10547  ratio=3.558  RECOMPUTE
+           degraded G=3: recomp=     55828  fetch=     10591  ratio=5.271  RECOMPUTE
+           degraded G=4: recomp=     74831  fetch=     10614  ratio=7.050  RECOMPUTE
+          quiescent G=1: recomp=     19030  fetch=     18856  ratio=1.009  RECOMPUTE
+          quiescent G=2: recomp=     37521  fetch=     19290  ratio=1.945  RECOMPUTE
+          quiescent G=3: recomp=     55828  fetch=     19440  ratio=2.872  RECOMPUTE
+          quiescent G=4: recomp=     74831  fetch=     19515  ratio=3.835  RECOMPUTE
+      quiet_evening G=1: recomp=     19030  fetch=     27156  ratio=0.701  FETCH
+      quiet_evening G=2: recomp=     37521  fetch=     28065  ratio=1.337  RECOMPUTE
+      quiet_evening G=3: recomp=     55828  fetch=     28382  ratio=1.967  RECOMPUTE
+      quiet_evening G=4: recomp=     74831  fetch=     28543  ratio=2.622  RECOMPUTE
+       peak_1stream G=1: recomp=     19030  fetch=     34920  ratio=0.545  FETCH
+       peak_1stream G=2: recomp=     37521  fetch=     36438  ratio=1.030  RECOMPUTE
+       peak_1stream G=3: recomp=     55828  fetch=     36973  ratio=1.510  RECOMPUTE
+       peak_1stream G=4: recomp=     74831  fetch=     37247  ratio=2.009  RECOMPUTE
+
+================================================================================
+SUMMARY
+================================================================================
+
+  L = 16384:
+           degraded: recompute wins at G >= 1
+          quiescent: recompute wins at G >= 1
+      quiet_evening: recompute wins at G >= 2
+       peak_1stream: recompute wins at G >= 2
+
+  L = 32768:
+           degraded: recompute wins at G >= 1
+          quiescent: recompute wins at G >= 1
+      quiet_evening: recompute wins at G >= 2
+       peak_1stream: recompute wins at G >= 2
+
+Analysis saved to data/raw/multigpu_scaling_20260925T005219Z/analysis.json
+
+=== Done at 2026-09-24T20:00:48-05:00 ===

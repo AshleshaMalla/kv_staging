@@ -1,0 +1,81 @@
+Job 157004 on rpg-93-1 at 2026-09-19T19:07:34Z
+
+================================================================================
+EXPERIMENTS B & C: OLD (slope=0.85) vs NEW (slope=1.0)
+================================================================================
+
+EXPERIMENT B — Fixed N=4, four-cell
+--------------------------------------------------------------------------------
+  c_wall factor: old = 3.55x c_iso, new = 4.00x c_iso
+
+  Workload A:
+    Policy            OLD interaction  NEW interaction    Change   Sign holds?
+    Equal                      -588.2           -588.2      +0.0           YES
+    KV-prop                    -209.2            -62.2    +147.1           YES
+    BW-prop                      -0.0           +198.5    +198.5       CHANGED
+    Stall-opt                  -440.5           -430.8      +9.7           YES
+    Cal. Stall-opt             -406.3           -432.3     -25.9           YES
+
+  Workload A — Stall-opt absolute added TTFT (ms):
+    Cell                         OLD         NEW       Delta
+    c1                        2839.4      2839.4        +0.0
+    c2                        3875.3      3875.3        +0.0
+    c3                        7896.2      8852.7      +956.5
+    c4                        8491.7      9457.8      +966.1
+
+  Workload B:
+    Policy            OLD interaction  NEW interaction    Change   Sign holds?
+    Equal                      -568.4           -568.4      +0.0           YES
+    KV-prop                    -438.8           -438.8      +0.0           YES
+    BW-prop                      -0.0             -0.0      -0.0           YES
+    Stall-opt                  -275.9           -313.0     -37.1           YES
+    Cal. Stall-opt             -281.5           -318.5     -37.1           YES
+
+  Workload B — Stall-opt absolute added TTFT (ms):
+    Cell                         OLD         NEW       Delta
+    c1                        5906.4      5906.4        +0.0
+    c2                        7336.4      7336.4        +0.0
+    c3                        9927.2     10850.5      +923.3
+    c4                       11081.2     11967.5      +886.2
+
+
+EXPERIMENT C — Feedback (N is output)
+--------------------------------------------------------------------------------
+  Running old slope...
+  Running new slope...
+
+  Superadditivity interaction (Stall-opt, ms):
+      Load         OLD         NEW      Change   Sign holds?
+      30%       +15.9        +6.1        -9.8           YES
+      50%       +79.4      +120.5       +41.2           YES
+      70%      +600.9      +742.2      +141.2           YES
+      85%     +1140.8     +4614.0     +3473.2           YES
+
+  All policies at 70% load (interaction, ms):
+    Policy                   OLD         NEW      Change
+    Equal                 +545.8     +1071.1      +525.3
+    KV-prop               +731.2     +1229.7      +498.4
+    BW-prop                -23.0       +65.4       +88.4
+    Stall-opt             +600.9      +742.2      +141.2
+    Cal. Stall-opt        +578.3      +749.0      +170.7
+
+  Metastability drain times (Stall-opt, queued):
+      Load  OLD drain(s)   OLD persist  NEW drain(s)   NEW persist   Direction
+      70%            94         1.57x           130         2.16x    STRONGER
+      85%           155         2.58x           N/A           N/A      WEAKER
+
+  Metastability detail:
+    70%: OLD preN=2.7 duringN=20.0 peakN=42
+    70%: NEW preN=3.6 duringN=21.1 peakN=48
+    85%: OLD preN=10.8 duringN=46.9 peakN=68
+    85%: NEW preN=18.6 duringN=54.3 peakN=81
+
+================================================================================
+SUMMARY
+================================================================================
+  Experiment B: sub-additivity sign preserved? Check above.
+  Experiment C: superadditivity sign preserved? Check above.
+  Metastability: drain times moved which direction? Check above.
+  Expectation was: both findings STRENGTHEN with slope 1.0.
+
+Done at 2026-09-19T19:07:45Z

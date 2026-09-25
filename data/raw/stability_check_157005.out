@@ -1,0 +1,57 @@
+Job 157005 on rpg-93-1 at 2026-09-19T19:15:45Z
+
+================================================================================
+NO-EPISODE STABILITY CHECK (slope=1.0)
+================================================================================
+Q_SLOPE = 1.0
+Capacity = 1.590 req/s (mean service 0.629s)
+
+STEP 1-2: No-episode N trajectory at 70% and 85% load
+--------------------------------------------------------------------------------
+  Load 70% (1.113 req/s):
+    mean N = 5.7, max N = 22
+    Windows: [100-300s]=4.8  [300-500s]=7.9  [500-700s]=3.9  [700-880s]=4.6
+    Censoring: 0.0%
+    → STATIONARY
+
+  Load 85% (1.352 req/s):
+    mean N = 28.7, max N = 50
+    Windows: [100-300s]=19.7  [300-500s]=34.5  [500-700s]=28.8  [700-880s]=35.6
+    Censoring: 0.5%
+    → TRENDING UP — intrinsic instability
+
+STEP 3: Arrival rate sweep — find effective saturation
+--------------------------------------------------------------------------------
+  Arrival rate sweep (constant BW, no episode, queued, Stall-opt):
+      Load     Rate   meanN   maxN     w1     w4     Trend   Cens               Verdict
+      50%    0.795     1.9     15    1.5    1.6      flat   0.0%                stable
+      52%    0.827     1.9     11    1.7    1.9      flat   0.0%                stable
+      54%    0.859     2.2     16    2.3    2.0      flat   0.0%                stable
+      56%    0.891     2.0     11    2.3    1.4      flat   0.0%              marginal
+      58%    0.922     2.7     17    2.3    3.3        UP   0.0%              UNSTABLE
+      60%    0.954     2.7     16    2.1    2.1      flat   0.0%                stable
+      62%    0.986     3.4     18    4.1    2.4      flat   0.0%              marginal
+      64%    1.018     3.7     23    4.7    3.2      flat   0.0%              marginal
+      66%    1.050     3.8     16    3.7    3.3      flat   0.0%                stable
+      68%    1.082     4.7     19    3.9    2.9      flat   0.0%              marginal
+      70%    1.113     5.7     22    4.8    4.6      flat   0.0%                stable
+      72%    1.145     5.8     26    3.5    4.8        UP   0.0%              UNSTABLE
+      74%    1.177     6.2     23    6.5    6.8      flat   0.0%                stable
+      76%    1.209     7.7     36    7.0   12.2        UP   0.0%              UNSTABLE
+      78%    1.241    11.0     40    8.9   17.0        UP   0.0%              UNSTABLE
+      80%    1.272    12.1     38   10.2   18.5        UP   0.0%              UNSTABLE
+      82%    1.304    17.0     38   16.2   18.8      flat   0.0%              marginal
+      84%    1.336    20.1     40   14.6   23.5        UP   0.0%              UNSTABLE
+      86%    1.368    36.0     65   22.4   48.5        UP   0.8%              UNSTABLE
+      88%    1.400    47.8     97   25.6   71.6        UP   3.0%              UNSTABLE
+      90%    1.431    63.5    129   33.0  100.3        UP   4.3%              UNSTABLE
+      92%    1.463    81.2    161   41.8  131.9        UP   6.0%              UNSTABLE
+      94%    1.495    99.2    193   50.7  162.8        UP   8.1%              UNSTABLE
+      96%    1.527   118.1    232   60.6  194.8        UP  11.0%              UNSTABLE
+      98%    1.559   124.0    255   57.0  213.3        UP  12.3%              UNSTABLE
+
+  Last stable load: 74%
+  First unstable load: 58%
+  Effective saturation point: ~66% of 1.590 req/s = ~1.050 req/s
+
+Done at 2026-09-19T19:15:47Z

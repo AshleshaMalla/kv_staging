@@ -1,0 +1,114 @@
+Job 157007 on rpg-93-1 at 2026-09-19T19:28:28Z
+
+================================================================================
+METASTABILITY DEEP ANALYSIS (slope=1.0, 30 seeds)
+================================================================================
+Q_SLOPE = 1.0
+Capacity = 1.590 req/s, mean_service = 0.629s
+Load = 70% = 1.113 req/s
+Episode: 60s degradation (depth 2.3x) at t=300s
+Seeds: 1-30 (30 total)
+
+TASK 1: Episode injection, 30 seeds
+--------------------------------------------------------------------------------
+  Seed   preN  n@300  n@360     dN  peakN   drain   persist
+     1    4.8   11.1   15.7   +4.6     21      10     0.16x
+     2    6.9    1.4   16.1  +14.7     20      38     0.63x
+     3    8.7    3.1   37.8  +34.7     38     144     2.40x
+     4    2.0    0.2    4.1   +3.9     13       7     0.11x
+     5    6.7    9.1   20.9  +11.8     30     216     3.59x
+     6   10.2    5.8    9.7   +3.9     11     N/A       N/A
+     7    5.0    4.9   29.3  +24.4     40      98     1.63x
+     8    2.8    4.9   26.4  +21.6     30      46     0.78x
+     9    8.0    6.6   20.9  +14.3     22      59     0.98x
+    10    5.5   12.3   57.3  +45.0     58      81     1.35x
+    11    5.8    2.7   18.6  +15.9     25      29     0.49x
+    12    6.4    0.9   23.9  +23.0     25      50     0.83x
+    13    4.1    3.4   32.3  +28.9     35      64     1.06x
+    14    7.4    7.9   10.2   +2.3     18       2     0.04x
+    15    2.6    3.0    2.9   -0.1     15       0     0.00x
+    16    3.2    1.2   26.8  +25.6     29      96     1.61x
+    17    3.2    0.0   30.1  +30.1     36     283     4.72x
+    18    3.4    1.7   15.0  +13.3     19       8     0.12x
+    19    5.9    7.2    6.1   -1.1     18     N/A       N/A
+    20    5.5    0.4   21.3  +20.9     27      45     0.75x
+    21    3.2    1.2   16.4  +15.2     20      39     0.65x
+    22    4.8   13.3   34.2  +20.9     49     246     4.09x
+    23    2.7    4.7   23.1  +18.4     24      82     1.37x
+    24    2.8    2.6   14.2  +11.7     15       8     0.14x
+    25    1.7    2.2    6.4   +4.2     12       4     0.07x
+    26    3.0    2.0   26.8  +24.8     29      35     0.59x
+    27    5.7    4.7   10.1   +5.4     11       2     0.03x
+    28    1.6    0.9   35.3  +34.4     39      58     0.97x
+    29    9.6   12.6    2.0  -10.6     13     N/A       N/A
+    30    6.7    9.1   13.1   +4.0     19      10     0.16x
+
+  Drain time: mean=59s, median=38s, std=74s
+  Persistence: mean=1.09x, median=0.75x, std=1.26x
+  Range: [0s, 283s] = [0.00x, 4.72x]
+  Seeds with persistence > 1.0: 9/27
+  Seeds with persistence < 1.0: 18/27
+
+REGRESSION: drain_time vs preN
+--------------------------------------------------------------------------------
+  n = 30
+  Pearson r = -0.031
+  drain_s = -1.0 * preN + 63.6
+  Direction: NEGATIVE (higher preN → shorter drain)
+  → NO meaningful correlation: drain is not predictable from preN
+
+  delta_N (queue built during episode) vs drain:
+  Pearson r = 0.536
+  Mean delta_N = 15.5, std = 12.6
+  → Delta_N IS predictive of drain time
+
+TASK 2: Fluid-queue baseline comparison
+--------------------------------------------------------------------------------
+  lambda = 1.113 req/s, mu = 1.590 req/s
+  Spare capacity = mu - lambda = 0.477 req/s
+
+  Seed   preN  n@360     dN   sim_drain   fluid_drain    ratio
+     1    4.8   15.7   +4.6         10s           23s     0.42
+     2    6.9   16.1  +14.7         38s           19s     1.96
+     3    8.7   37.8  +34.7        144s           61s     2.37
+     4    2.0    4.1   +3.9          7s            4s     1.52
+     5    6.7   20.9  +11.8        216s           30s     7.24
+     6   10.2    9.7   +3.9          0s            0s      inf
+     7    5.0   29.3  +24.4         98s           51s     1.92
+     8    2.8   26.4  +21.6         46s           50s     0.94
+     9    8.0   20.9  +14.3         59s           27s     2.18
+    10    5.5   57.3  +45.0         81s          109s     0.75
+    11    5.8   18.6  +15.9         29s           27s     1.10
+    12    6.4   23.9  +23.0         50s           37s     1.36
+    13    4.1   32.3  +28.9         64s           59s     1.08
+    14    7.4   10.2   +2.3          2s            6s     0.42
+    15    2.6    2.9   -0.1          0s            1s     0.47
+    16    3.2   26.8  +25.6         96s           49s     1.95
+    17    3.2   30.1  +30.1        283s           56s     5.02
+    18    3.4   15.0  +13.3          8s           24s     0.31
+    19    5.9    6.1   -1.1          0s            0s     0.00
+    20    5.5   21.3  +20.9         45s           33s     1.36
+    21    3.2   16.4  +15.2         39s           28s     1.40
+    22    4.8   34.2  +20.9        246s           62s     3.98
+    23    2.7   23.1  +18.4         82s           43s     1.91
+    24    2.8   14.2  +11.7          8s           24s     0.34
+    25    1.7    6.4   +4.2          4s           10s     0.40
+    26    3.0   26.8  +24.8         35s           50s     0.71
+    27    5.7   10.1   +5.4          2s            9s     0.22
+    28    1.6   35.3  +34.4         58s           71s     0.83
+    29    9.6    2.0  -10.6          0s            0s      inf
+    30    6.7   13.1   +4.0         10s           13s     0.71
+
+  Simulated / fluid baseline ratio:
+    mean = 1.53
+    median = 1.09
+    std = 1.58
+    range = [0.00, 7.24]
+    Seeds with ratio > 1.0 (drain SLOWER than fluid): 15/28
+    Seeds with ratio < 1.0 (drain FASTER than fluid): 13/28
+
+  → AMBIGUOUS: simulated drain is close to fluid baseline.
+    Cannot distinguish metastability from ordinary backlog recovery
+    at this sample size and load level.
+
+Done at 2026-09-19T19:28:29Z

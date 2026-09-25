@@ -1,12 +1,82 @@
 # kv_staging
 
-For LLM inference, at what context length does **fetching** a KV cache from
-storage become faster than **recomputing** it on the GPU?
+A measurement study of KV cache fetch-vs-recompute tradeoffs for LLM inference.
 
-The crossover is L\* = (KV\_bytes\_per\_token / BW - a) / b, where BW is read
-bandwidth and T\_prefill(L) = a\*L + b\*L^2 models prefill cost. Every term is
-directly measurable. This repo measures them — and then asks what happens under
-concurrent load and time-varying bandwidth.
+**Research question.** At what context length does fetching a KV cache from
+storage become faster than recomputing it on the GPU?
+
+The crossover is L\* = (KV\_bytes\_per\_token / BW + H + M - a) / b, where BW is
+read bandwidth, H is host-to-GPU transfer cost, M is metadata overhead, and
+T\_prefill(L) = a\*L + b\*L^2 models prefill cost. Every term is directly
+measurable. This repo measures them.
+
+## Project status
+
+This is a measurement study. Four simulation-derived candidate findings
+(metastability, super-additivity-as-coupling, sub-additivity-as-mechanism, and
+the contingent sign of storage x compute coupling) were tested with controls
+and all reduced to textbook queueing behavior or modeling assumptions. No
+simulation finding survived controlled testing. What remains is the hardware
+measurements and the crossover formula.
+
+See [docs/STATUS.md](docs/STATUS.md) for the full status and
+[docs/DECISIONS.md](docs/DECISIONS.md) for the decision log.
+
+### What is measured and stands
+
+- **Storage bandwidth:** 1,400-6,000 MB/s on Hammerspace NFS, bimodal and
+  episodic, with a documented 2.3x spontaneous degradation event.
+- **Prefill latency:** T(L) = a\*L + b\*L^2, a = 3.5158e-5 s/tok,
+  b = 5.8979e-10 s/tok^2 (vLLM 0.29.0 + FlashAttention v3, H100 NVL at
+  960-1035 MHz sustained under 400W TDP).
+- **Fetch overhead:** 47.3 us/tok end-to-end (NFS read into pinned CUDA
+  buffer + H2D). 1.35x the prefill linear coefficient. Mechanism progression:
+  135.3 -> 67.7 -> 47.3 us/tok (naive -> v1 -> v2).
+- **Crossover formula:** T\_fetch = S/BW + H + M. Audited, internally
+  consistent. H-sensitivity: H\_critical = 0.71 us/tok, measured H = 2.38,
+  3.3x threshold.
+- **Q(N) = N x T\_service(1):** Prefill serializes completely (slope 0.98-1.02).
+  Measured across 3 nodes, 5 batch budgets, 3 context lengths, N to 64.
+- **Saturation zone:** 70-85% transitional at slope 1.0. Effective capacity
+  materially below the 1.59 req/s compute-bound estimate.
+
+### Crossover points
+
+| Bandwidth state | BW (MB/s) | L\* (tokens) | Status |
+|-----------------|-----------|-------------|--------|
+| Degraded | 1,400 | 103,175 | Crossover |
+| Quiescent | 2,588 | 30,307 | Crossover |
+| Quiet evening | 3,806 | 2,826 | Fragile (margin 1.66 us) |
+| Peak 1-stream | 4,993 | -- | Fetch always wins |
+
+On a single GPU, concurrency does not move the crossover. Storage link, PCIe
+link, and GPU compute are all shared among concurrent requests, so all scale
+together: L\* is invariant in N to within ~10 tokens (the metadata term).
+
+Measured (2026-09-24): across a node's GPUs, each GPU has its own compute and
+PCIe link, while the node's storage ceiling is shared. Scaling efficiency
+98.3-101.7% at G=1-4 (3 runs, 2 nodes). At quiet evening and peak BW — where
+single-GPU fetch wins — recompute wins at G >= 2 (L=16K) or G >= 2-3 (L=32K;
+peak L=32K G=2 is MARGINAL at 1.06x). Quiescent L=32K G=1 is also MARGINAL
+(1.01x). See docs/STATUS.md for the full per-BW, per-L, per-G table.
+
+### What was withdrawn
+
+- **27x boundary movement:** Computed from superseded HF prefill coefficients.
+  Retracted 2026-09-18. (DECISIONS.md 2026-09-18)
+- **0.85 Q(N) slope:** Cold-start artifact from a single unreplicated
+  measurement. Corrected to 1.0 on 2026-09-19. (DECISIONS.md 2026-09-19)
+- **Metastability (130s / 2.16x drain persistence):** 30-seed replication showed
+  median 1.09x, indistinguishable from ordinary backlog recovery. Withdrawn
+  2026-09-19. (DECISIONS.md 2026-09-19)
+- **Contingent sign of storage x compute coupling:** Super-additive half is
+  queueing convexity (reproduced by textbook baseline); sub-additive half
+  depends on overlap assumption that doesn't match vLLM's scheduler. Withdrawn
+  2026-09-20. (DECISIONS.md 2026-09-20)
+- **Loaded crossover "N>=4 fetch always wins":** Gave each concurrent fetch the
+  full node storage bandwidth (and unshared PCIe). With all shared resources
+  correctly divided, L\* is invariant in N. Withdrawn 2026-09-24.
+  (DECISIONS.md 2026-09-24)
 
 ## Hardware
 
@@ -20,90 +90,6 @@ Texas Tech REPACSS cluster, single GPU node:
 
 Llama-3.1-8B (bfloat16, 128 KiB KV per token, 128K max context).
 Fits on 1x H100 NVL through 128K tokens (63.3 GiB peak HBM of 93 GiB).
-
-## What's been measured
-
-### Storage bandwidth
-
-NFS bandwidth was measured across multiple conditions:
-
-| Condition | Bandwidth |
-|-----------|-----------|
-| Degraded (external tenant load) | ~1.4 GB/s |
-| Quiescent (103-min baseline, CV=0.65%) | ~2.6 GB/s |
-| Quiet evening | ~3.8 GB/s |
-| Peak single-stream | ~5.0 GB/s |
-| Peak multi-stream | ~6.0 GB/s |
-
-Bandwidth is flat across 1-16 streams (no parallelism benefit). Multi-node
-scaling is ~90% efficient at 4 nodes (per-node ceiling, not shared).
-
-### Prefill latency
-
-Prefill coefficients for T(L) = a\*L + b\*L^2, measured with vLLM 0.29.0 +
-FlashAttention v3 on H100 NVL at sustained SM clocks of 960-1035 MHz (400W TDP
-power-limited):
-
-- **a** = 3.5158e-5 s/token (linear term)
-- **b** = 5.8979e-10 s/token^2 (quadratic term)
-
-Earlier measurements were invalidated by a clock-lock at 345 MHz (admin-fixed
-by Sep 15). HF-based coefficients are also recorded but superseded.
-
-### Fetch overhead
-
-End-to-end KV cache fetch cost (NFS read into pinned CUDA buffer + H2D
-transfer): **47.3 us/token** (implied 2.9 GB/s disk-to-host, 55 GB/s H2D).
-This is 1.37x the prefill linear coefficient. The loading mechanism matters
-more than raw storage bandwidth at KV cache sizes.
-
-## Key findings
-
-### Crossover points (N=1, no queueing)
-
-| Bandwidth state | Crossover L\* |
-|-----------------|---------------|
-| Degraded (1.4 GB/s) | ~101K tokens |
-| Quiescent (2.6 GB/s) | ~30K tokens |
-| Quiet evening (3.8 GB/s) | ~2.8K tokens |
-| Peak (5.0+ GB/s) | Fetch always wins |
-
-At quiescent bandwidth, fetch wins for any context above 30K tokens. At peak
-bandwidth, fetch is faster than even the linear prefill term.
-
-### Under concurrent load
-
-GPU prefill throughput saturates at concurrency 1. With N concurrent requests,
-the last request waits ~0.85\*(N-1) service times (verified via vLLM diagnostic
-job). This means:
-
-- **N=2, degraded BW:** crossover drops to ~21K tokens
-- **N>=4, any BW:** fetch always wins
-
-Serialized GPU queueing makes recompute uncompetitive once there is any
-concurrency.
-
-### Storage x compute coupling
-
-The sign of the interaction between bandwidth variance and compute queueing
-depends on whether concurrency can respond to bandwidth:
-
-- **Fixed N (closed workload):** sub-additive. Queueing stretches the compute
-  window, which *shields* against bandwidth stalls.
-- **Feedback (open-loop arrivals, N responds to BW):** super-additive.
-  Bandwidth drops grow the queue, which compounds the two penalties.
-
-Both results are from simulation using our measured prefill coefficients, not
-the paper's A100 numbers. The fixed-N result is the control showing what
-ObjectCache/Cake's modeling assumption produces; the feedback result shows what
-happens under realistic offered load.
-
-### Metastability
-
-A single 60s bandwidth degradation episode builds a queue that outlives the
-episode by 1.5-2.6x after bandwidth fully recovers (94s drain at 70% load,
-155s at 85%). A throughput-based bandwidth estimator (like CacheGen's) sees a
-healthy path during the drain window while the system is still degraded.
 
 ## Repo structure
 
@@ -120,6 +106,11 @@ scripts/          Measurement scripts (bash + python)
   prefill_loaded_sweep_v2.py Loaded prefill with clock logging
   measure_fetch_overhead_v2.py  KV fetch pipeline measurement
   diagnose_batching.py       vLLM batching behavior diagnostic
+  qn_extended_sweep.py       Q(N) extended sweep (N to 64)
+  qn_batch_confound.py       Q(N) batch-budget confound check
+  stability_seeded.py        Saturation zone seed sweep
+  overlap_sweep.py           Transfer-compute overlap sweep
+  contingent_sign_test.py    Contingent sign controls
 
 analysis/         Analysis and simulation
   crossover.py              Crossover point computation + plots
@@ -139,8 +130,10 @@ data/
   *.png                     Generated plots
 
 docs/
+  STATUS.md                 Current project status
   DECISIONS.md              Decision log
-  GATES.md                  Pre-registered decision thresholds
+  GATES.md                  Decision gates applied during the project
+  archive/                  Superseded planning documents
 ```
 
 ## Usage
@@ -156,18 +149,21 @@ bash scripts/hw_snapshot.sh
 bash scripts/bw_sweep.sh /mnt/REPACSS shared_nfs
 
 # Prefill sweep (vLLM, authoritative)
-python3 scripts/prefill_loaded_sweep_v2.py
+PYTHONNOUSERSITE=1 python3 scripts/prefill_loaded_sweep_v2.py
 
 # Crossover analysis
 python3 analysis/crossover.py data/raw/prefill_loaded_v2_*.json \
     data/raw/bw_shared_nfs_*/summary.csv
 
-# Queue-aware compute window simulation
-python3 analysis/queue_compute.py
+# Q(N) extended sweep
+PYTHONNOUSERSITE=1 python3 scripts/qn_extended_sweep.py
 
-# Concurrency feedback simulation
-python3 analysis/queue_feedback.py
+# Q(N) batch-budget confound check
+PYTHONNOUSERSITE=1 python3 scripts/qn_batch_confound.py
 ```
+
+Requires the `m1` conda environment with `PYTHONNOUSERSITE=1` for GPU scripts
+(avoids a conflicting torch in `~/.local`).
 
 ## Still pending
 

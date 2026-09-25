@@ -316,27 +316,35 @@ def main():
     print("=" * 80)
 
     import numpy as np
+    import yaml
+
+    constants_path = Path(__file__).resolve().parent.parent / "config" / "measured_constants.yaml"
+    with open(constants_path) as f:
+        consts = yaml.safe_load(f)
+
+    S = consts["model"]["kv_bytes_per_token"]["value"]
+    H = consts["fetch_overhead"]["v2_h_to_gpu_us_per_token"]["value"] * 1e-6
+    M = consts["fetch_overhead"]["metadata_amortized_s_per_token"]["value"]
+
+    BW_STATES = {
+        "degraded": consts["bandwidth"]["hammerspace_degraded_mbps"]["value"],
+        "quiescent": consts["bandwidth"]["hammerspace_quiescent_mbps"]["value"],
+        "quiet_evening": consts["bandwidth"]["hammerspace_quiet_evening_mbps"]["value"],
+        "peak_1stream": consts["bandwidth"]["hammerspace_peak_1stream_mbps"]["value"],
+        "peak_multi": consts["bandwidth"]["hammerspace_peak_multistream_mbps"]["value"],
+    }
+
+    print(f"  Constants from {constants_path}:")
+    print(f"    S = {S} bytes/tok, H = {H:.4e} s/tok, M = {M:.4e} s/tok")
+    print(f"    BW states: {BW_STATES}")
 
     # Use first sweep (default config) for crossover
     if all_results["sweeps"]:
         first_sweep = all_results["sweeps"][0]
         ok = [m for m in first_sweep["measurements"] if m["status"] == "ok"]
 
-        # Fetch overhead (v2 corrected)
-        S = 131072
-        H = 2.38e-6
-        M = 6.1e-9
-
-        BW_STATES = {
-            "degraded": 1400,
-            "quiescent": 2588,
-            "quiet_evening": 3806,
-            "peak_1stream": 4993,
-            "peak_multi": 5998,
-        }
-
         print(f"\n  For each (N, BW), crossover L* where fetch beats recompute(last request)")
-        print(f"  T_fetch = (S/BW + H)*L")
+        print(f"  T_fetch = (S/BW + H + M)*L")
         print(f"  T_recompute_last(N) = wall(N) ≈ N * (aL + bL^2)")
         print()
 
@@ -358,9 +366,18 @@ def main():
                 continue
 
             # Fit T_last = a_eff * L + b_eff * L^2
-            A = np.column_stack([Ls, Ls**2])
-            coeffs, _, _, _ = np.linalg.lstsq(A, Ts_last, rcond=None)
+            A_mat = np.column_stack([Ls, Ls**2])
+            coeffs, _, _, _ = np.linalg.lstsq(A_mat, Ts_last, rcond=None)
             a_eff, b_eff = coeffs
+
+            if conc == 1:
+                print(f"\n  N=1 fitted coefficients: a={a_eff:.4e} s/tok, b={b_eff:.4e} s/tok^2")
+                yaml_a = consts["prefill"]["coeff_a_vllm_s_per_token"]["value"]
+                yaml_b = consts["prefill"]["coeff_b_vllm_s_per_token2"]["value"]
+                if yaml_a is not None:
+                    print(f"  YAML coefficients:       a={yaml_a:.4e} s/tok, b={yaml_b:.4e} s/tok^2")
+                    print(f"  Delta: a={abs(a_eff-yaml_a)/yaml_a*100:.2f}%, b={abs(b_eff-yaml_b)/yaml_b*100:.2f}%")
+                print()
 
             for bw_label, bw_mbps in BW_STATES.items():
                 t_fetch = S / (bw_mbps * 1e6) + H + M
@@ -380,6 +397,30 @@ def main():
                 l_str = f"{l_star:.0f}" if l_star and l_star > 0 else "N/A"
                 print(f"  {conc:>3}  {bw_label:>15}  {l_str:>12}  {verdict:>25}")
             print()
+
+        # Write fitted N=1 coefficients back to YAML so code and record stay coupled
+        n1_ms = sorted(by_conc.get(1, []), key=lambda m: m["length"])
+        if len(n1_ms) >= 2:
+            Ls_n1 = np.array([m["length"] for m in n1_ms], dtype=np.float64)
+            Ts_n1 = np.array([m["last_s"] for m in n1_ms], dtype=np.float64)
+            A_n1 = np.column_stack([Ls_n1, Ls_n1**2])
+            c_n1, _, _, _ = np.linalg.lstsq(A_n1, Ts_n1, rcond=None)
+            a_fit, b_fit = c_n1
+
+            consts["prefill"]["coeff_a_vllm_s_per_token"]["value"] = float(f"{a_fit:.4e}")
+            consts["prefill"]["coeff_a_vllm_s_per_token"]["source"] = str(out_path)
+            consts["prefill"]["coeff_a_vllm_s_per_token"]["script"] = "scripts/prefill_loaded_sweep_v2.py"
+            consts["prefill"]["coeff_a_vllm_s_per_token"]["date"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+            consts["prefill"]["coeff_b_vllm_s_per_token2"]["value"] = float(f"{b_fit:.4e}")
+            consts["prefill"]["coeff_b_vllm_s_per_token2"]["source"] = str(out_path)
+            consts["prefill"]["coeff_b_vllm_s_per_token2"]["script"] = "scripts/prefill_loaded_sweep_v2.py"
+            consts["prefill"]["coeff_b_vllm_s_per_token2"]["date"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+            with open(constants_path, "w") as f:
+                yaml.dump(consts, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
+            print(f"  Fitted N=1 coefficients written back to {constants_path}")
+            print(f"    a = {a_fit:.4e}, b = {b_fit:.4e}")
 
 
 if __name__ == "__main__":

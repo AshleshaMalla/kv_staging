@@ -258,12 +258,19 @@ prefill:
     date: "2026-09-16"
     note: "Sustained SM clock under continuous prefill load. Power-limited at ~400W (H100 NVL TDP). 200ms sampling interval throughout run. NOT the 1785 MHz max boost — that is transient only."
   queueing_model:
-    value: "T_last(N) ≈ N * T_service(1), ~15% batching benefit"
+    value: "T_wall(N) ≈ N * T_service(1), slope 0.98-1.02 (pure serialization)"
+    units: "string"
+    source: "data/raw/qn_extended_20260918T210728Z/results.json"
+    script: "scripts/qn_extended_sweep.py"
+    date: "2026-09-19"
+    note: "CORRECTED 2026-09-19. Slope ~1.0 (no batching benefit at production context lengths). Measured across 3 nodes (rpg-93-1/3/5), 5 max_num_batched_tokens values (8K-131K), 3 context lengths (4K/16K/32K), N up to 64, 2 clock states (825-885 and 945-1005 MHz). Linear with beta=0.998, no curvature. Per-length: 1.107 at L=4K (short-context overhead), 0.994 at L=16K, 0.982 at L=32K. Cross-node delta <0.7%. SUPERSEDES the 0.85 slope from job 155248."
+  queueing_model_superseded:
+    value: "SUPERSEDED — 0.85 slope from job 155248 (cold-start artifact)"
     units: "string"
     source: "data/raw/diagnose_batching_155248.out"
     script: "scripts/diagnose_batching.py"
     date: "2026-09-16"
-    note: "VERIFIED via diagnostic job 155248. Batching IS occurring — confirmed by AsyncLLMEngine test where all N=4 requests complete simultaneously (spread=0.0000s), not staggered. Ratio is 3.35-3.45x for N=4 (not 4.0x), showing ~15% batching benefit from amortized per-step overhead. But aggregate throughput is flat (compute-bound), so wall time still scales nearly linearly with N×L. Offline and async engines produce identical ratios — this is hardware behavior, not a benchmark artifact."
+    note: "SUPERSEDED 2026-09-19. The 0.85 slope came from diagnose_batching.py (job 155248) — a single unreplicated N=4 measurement at L=4096 with NO warmup on rpg-93-5. The N=1 baseline (0.1546s) included cold-start costs (JIT, memory allocation) that inflated the denominator, producing ratio=3.45x (slope 0.82) instead of the true ~4.0x (slope ~1.0). The loaded sweep (prefill_loaded_sweep_v2.py) measured the same configuration with warmup and 3 reps at the same time and found ratio=3.978 (slope 0.993), but the diagnostic result was adopted because it seemed more targeted and its result was more dramatic. The 0.85 propagated into queue_compute.py, queue_feedback.py, and all simulation results. Corrected by 14 independent measurements across 3 nodes, 5 batch budgets, all showing slope ~1.0."
   scheduler_artifact:
     value: false
     units: "boolean"
@@ -375,7 +382,7 @@ fetch_overhead:
     source: "data/raw/fetch_overhead_v2_20260915T203940Z.json"
     script: "scripts/measure_fetch_overhead_v2.py"
     date: "2026-09-15"
-    note: "Full pipeline: read-into-pinned + H2D, measured end-to-end. 4.73e-5 s/tok. 1.37x the prefill linear coefficient (3.46e-5). This is the correct overhead for the crossover model."
+    note: "Full pipeline: read-into-pinned + H2D, measured end-to-end. 4.73e-5 s/tok. 1.35x the vLLM prefill linear coefficient (3.5158e-5). Note: an earlier version of this note cited 1.37x against the HF coefficient (3.4551e-5); corrected 2026-09-18."
   pin_alloc_us:
     value: 12
     units: "us"
@@ -383,6 +390,13 @@ fetch_overhead:
     script: "scripts/measure_fetch_overhead_v2.py"
     date: "2026-09-15"
     note: "One-time cost of torch.empty(pin_memory=True). Amortized to zero in production systems using a pinned buffer pool."
+  metadata_amortized_s_per_token:
+    value: 6.1e-09
+    units: "s/token"
+    source: "inline measurement 2026-09-15"
+    script: "inline (derived: metadata_open_stat_close_us / 8192 tokens per chunk)"
+    date: "2026-09-15"
+    note: "M = 50 us metadata / 8192 tokens per chunk = 6.1e-9 s/tok. Negligible (0.006 us/tok) but carried for completeness in T_fetch = S/BW + H + M."
   queueing_us:
     value: null
     units: "us"
@@ -395,7 +409,7 @@ fetch_overhead:
   # The 3-step progression quantifies how much the fetch mechanism matters:
   #   naive (torch.load + pageable):  135.3 us/tok  (3.9x prefill a)
   #   v1 (bytearray + pinned, dbl):    67.7 us/tok  (2.0x prefill a)
-  #   v2 (pinned + O_DIRECT, single):  47.3 us/tok  (1.4x prefill a)
+  #   v2 (pinned + O_DIRECT, single):  47.3 us/tok  (1.35x prefill a)
   # Going from naive to v2 is a 2.9x reduction. The mechanism matters more
   # than the storage bandwidth for files in the KV cache size range.
 
@@ -431,28 +445,47 @@ crossover:
     source: "data/crossover_phase_diagram.png"
     script: "inline analysis 2026-09-15 (v2)"
     date: "2026-09-15"
-    note: "Crossovers computed with HF a/b; shifted by ~20% when using vLLM coefficients with lower b (FlashAttn v3). See loaded_crossover below."
+    note: "STALE — Crossovers computed with HF a/b; shifted by ~20% when using vLLM coefficients with lower b (FlashAttn v3). The retracted '27x boundary movement' claim (81941/3031 = 27.0x) was derived from these HF values. See boundary_ratio_retracted and loaded_crossover below."
 
-  # ── Authoritative vLLM-based crossover (2026-09-16) ──
-  # Uses vLLM coefficients: a=3.5158e-5, b=5.8979e-10 (clock-logged, FlashAttn v3)
-  # Fetch cost: T_fetch(L) = (S/BW + H + M) × L  where S=131072, H=2.38e-6, M≈0
-  # Recompute: T_recompute_last(N,L) = N × (aL + bL²)
-  # L* = (fetch_per_tok/N - a) / b
-  # NOTE: The crossover for N>1 is PENDING VERIFICATION (see Correction 1 / job 155248).
-  # Q(N)=(N-1)×service might be a benchmark artifact of the offline LLM class.
-
-  # ── Loaded crossover (with queueing, 2026-09-16) ──
-  # For the LAST request in a wave of N concurrent fallbacks:
-  # T_fetch(L) = (S/BW + H + M) × L  [independent of N — each fetches in parallel]
-  # T_recompute_last(N,L) = N × (aL + bL²)  [serialized]
-  # L* = (fetch_per_tok/N - a) / b
+  # ── Authoritative vLLM-based crossover (2026-09-16, audited 2026-09-18) ──
+  # Formula (all inputs MEASURED):
+  #   T_fetch_per_tok = S/BW + H + M
+  #     S = 131072 bytes/tok  [model.kv_bytes_per_token, MEASURED]
+  #     H = 2.38e-6 s/tok    [fetch_overhead.v2_h_to_gpu_us_per_token, MEASURED]
+  #     M = 6.1e-9 s/tok     [fetch_overhead.metadata_amortized_s_per_token, DERIVED]
+  #     BW in bytes/s         [bandwidth.hammerspace_*, MEASURED]
+  #   T_recompute(L) = a*L + b*L^2
+  #     a = 3.5158e-5 s/tok  [prefill.coeff_a_vllm_s_per_token, MEASURED]
+  #     b = 5.8979e-10 s/tok^2 [prefill.coeff_b_vllm_s_per_token2, MEASURED]
+  #   L* = (T_fetch_per_tok - a) / b
+  #
+  # Internal consistency check (2026-09-18): at 2918 MB/s (the implied BW of the
+  # v2_full_pipeline measurement), S/BW + H + M = 44.9 + 2.38 + 0.006 = 47.3 us/tok,
+  # matching the end-to-end measurement exactly. The decomposition is sound.
+  #
+  # Payload-only variant (reviewer formula, omitting H and M):
+  #   T_fetch_per_tok = S/BW
+  # Rows 1, 2, 4 agree qualitatively with our formula. Row 3 (3806 MB/s)
+  # disagrees: payload-only gives 34.44 us < a=35.16 us (no crossover),
+  # while our formula gives 36.82 us > a (crossover at 2825). The entire
+  # row 3 crossover exists because of the 2.38 us H2D term.
+  #
+  # Concurrency and the crossover (CORRECTED 2026-09-24):
+  # On a single GPU, storage link, PCIe link, and GPU compute are ALL shared
+  # among N concurrent requests. With shared resources:
+  #   T_fetch(N,L) = N*(S/BW + H)*L + M*L   [storage and PCIe shared]
+  #   T_recompute_last(N,L) = N*(aL + bL²)   [GPU serialized]
+  # Both scale by N, so L* = (S/BW + H - a)/b + M/(N*b) ≈ L*(N=1).
+  # The loaded crossover is invariant in N to within ~10 tokens (the M term).
+  # The prior model gave each fetch unshared BW, contradicting the measured
+  # flat-across-streams storage ceiling. N>1 entries below are WITHDRAWN.
   loaded_crossover_N1_degraded_tokens:
     value: 103175
     units: "tokens"
     source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
     script: "scripts/prefill_loaded_sweep_v2.py"
     date: "2026-09-16"
-    note: "N=1 at 1400 MB/s. Crossover at ~101K. Only at degraded BW and single request does recompute remain competitive."
+    note: "N=1 at 1400 MB/s. Crossover at ~101K. Invariant in N on a single GPU (storage, PCIe, and compute all shared). See 2026-09-24 correction."
   loaded_crossover_N1_quiescent_tokens:
     value: 30307
     units: "tokens"
@@ -466,35 +499,86 @@ crossover:
     source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
     script: "scripts/prefill_loaded_sweep_v2.py"
     date: "2026-09-16"
-    note: "N=1 at 3806 MB/s. Crossover at ~2.8K — fetch wins for nearly all practical context lengths."
+    note: "N=1 at 3806 MB/s. Crossover at ~2.8K. FRAGILE: margin is 1.66 us (36.82 vs 35.16 us/tok), dominated by H=2.38 us H2D. Crossover vanishes if H < 0.71 us. Measured H range 2.37-2.39 us (stdev 0.02 us, 2 steady-state lengths, 15-rep medians), so L* is real but its exact value (2.8K +/- 47 tokens from H variation alone) is noise-level at this bandwidth. Without H term (payload-only formula), no crossover at 3806 MB/s."
   loaded_crossover_N1_peak_tokens:
     value: null
     units: "tokens"
     source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
     script: "scripts/prefill_loaded_sweep_v2.py"
     date: "2026-09-16"
-    note: "N=1 at 4993+ MB/s. Fetch per-token cost (28.6 us) < prefill linear (35.2 us). FETCH ALWAYS WINS."
+    note: "N=1 at 4993+ MB/s. Fetch per-token cost (28.6 us) < prefill linear (35.2 us). Fetch always wins at this BW regardless of N."
   loaded_crossover_N2_degraded_tokens:
-    value: 21782
+    value: "WITHDRAWN — computed with unshared storage BW per request"
     units: "tokens"
     source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
     script: "scripts/prefill_loaded_sweep_v2.py"
     date: "2026-09-16"
-    note: "N=2 at 1400 MB/s. Crossover drops to 21K. At all other BW states: fetch always wins."
+    note: "WITHDRAWN 2026-09-24. Original value 21782 assumed each concurrent fetch got full node BW independently. With shared BW and shared PCIe, L* is invariant in N (~103K at degraded). The 'crossover drops to 21K' claim was an artifact of the unshared-bandwidth model."
   loaded_crossover_N4_plus:
-    value: null
+    value: "WITHDRAWN — computed with unshared storage BW per request"
     units: "tokens"
     source: "data/raw/prefill_loaded_v2_20260916T053020Z.json"
     script: "scripts/prefill_loaded_sweep_v2.py"
     date: "2026-09-16"
-    note: "N>=4 at ANY bandwidth state: FETCH ALWAYS WINS. The queueing penalty (N× service time) makes recompute uncompetitive everywhere."
+    note: "WITHDRAWN 2026-09-24. 'N>=4 fetch always wins at any BW' was an artifact of giving each concurrent fetch the full node storage bandwidth and unshared PCIe. With all shared resources correctly divided, L* is invariant in N — the single-GPU crossover table reduces to the N=1 table."
   loaded_verdict:
-    value: "Under concurrent fallback load (N>=2), fetch dominates; GPU serialization is the decisive factor"
+    value: "WITHDRAWN — single-GPU crossover is invariant in N; the loaded crossover table reduces to N=1"
     units: "string"
     source: "data/loaded_phase_diagram.png"
     script: "scripts/prefill_loaded_sweep_v2.py"
     date: "2026-09-16"
-    note: "VERIFIED — serialization is real hardware behavior, not a benchmark artifact. Diagnostic (job 155248) confirmed: (1) vLLM batches tokens from multiple requests into shared forward passes, (2) AsyncLLMEngine with concurrent arrivals produces identical ratios (3.35x for N=4), (3) all requests complete simultaneously (not staggered). Batching occurs but provides only ~15% benefit because prefill is compute-bound — total throughput is constant regardless of batch composition. T_last(N) ≈ 0.85*N*T_service(1). N=1: depends on BW (101K/30K/2.8K crossovers). N>=4: fetch always wins at any BW. All coefficients specific to H100 NVL 400W TDP (SM 960-1035 MHz sustained). H100 SXM 700W would have ~1.5x higher sustained clocks, shifting crossovers outward. Phase diagram in data/loaded_phase_diagram.png."
+    note: "WITHDRAWN 2026-09-24. The prior verdict ('fetch dominates under concurrent load; GPU serialization is the decisive factor') assumed each concurrent fetch received full unshared node storage bandwidth and its own PCIe link. On a single GPU, storage link, PCIe link, and GPU compute are all shared among concurrent requests, so all scale by N and cancel. L* is invariant in N to within ~10 tokens (the metadata overhead term). Serialization is real (Q(N) = N*service, measured), but storage and PCIe contention are equally real — the asymmetry that made fetch 'win' under concurrency does not exist on a single node. MEASURED 2026-09-24: multi-GPU scaling test confirmed 98.3-101.7% efficiency at G=1-4 (3 runs, 2 nodes); across a node's GPUs, each GPU has its own compute and PCIe, while the node's storage ceiling is shared — so with more GPUs busy, recompute gains relative to fetch. See multigpu_scaling entry."
+  # ── H-sensitivity at 3806 MB/s (2026-09-18 audit) ──
+  # Row 3 (quiet evening) crossover depends on H2D overhead.
+  # H measured at L>=32K: 2.393 and 2.365 us/tok (mean 2.379, stdev 0.020,
+  # 15-rep medians per length). Critical H = 0.71 us/tok.
+  # L* sensitivity: H=2.0 → L*=2181; H=2.38 → L*=2825; H=3.0 → L*=3877.
+  # The crossover is real (measured H is 3.3x the critical threshold) but
+  # the exact L* value is meaningful only to +/- ~50 tokens given H uncertainty.
+  h_sensitivity_quiet_evening:
+    value: "H_critical=0.71 us/tok; at measured H=2.38: L*=2825; range [2800,2847] across steady-state lengths"
+    units: "string"
+    source: "data/raw/fetch_overhead_v2_20260915T203940Z.json"
+    script: "inline analysis 2026-09-18"
+    date: "2026-09-18"
+    note: "FIX 4 of 2026-09-18 crossover audit. H=2.38 is 3.3x the critical threshold (0.71 us), so the crossover EXISTS with high confidence, but exact L* is uncertain at ~2% level. Payload-only formula (no H) gives no crossover at this bandwidth — H is the decisive term."
+
+  # ── Multi-GPU prefill scaling (2026-09-24) ──
+  # Independent vLLM processes on separate GPUs, same node.
+  # vLLM 0.29.0, FlashAttn v3, enforce_eager, max_model_len=33000.
+  # No tensor parallelism — each GPU runs its own model instance.
+  # 3 independent runs across 2 nodes (rpg-93-6 ×2, rpg-93-3 ×1).
+  multigpu_scaling:
+    value: "G=1: 100%; G=2: 98.4-101.7%; G=3: 97.4-100.1%; G=4: 98.3-98.9% (range across 3 runs, L=16K/32K)"
+    units: "scaling efficiency vs G × single-GPU throughput"
+    source: "data/raw/multigpu_scaling_20260925T003935Z/analysis.json"
+    script: "scripts/multigpu_worker.py"
+    date: "2026-09-24"
+    note: "MEASURED. 3 independent runs (jobs 160492, 160494, 160495) on 2 nodes (rpg-93-6 ×2, rpg-93-3 ×1). 5 reps per GPU per length, 1 warmup. G=4 scaling efficiency at L=16K: 98.6%, 98.6%, 98.3%; at L=32K: 98.9%, 98.8%, 98.3%. Per-GPU service times stable across G (L=16K: 0.682-0.711s; L=32K: 1.694-1.761s). Mean power per active GPU 82-132W, well below 400W TDP. No SM clock degradation at G=4 vs G=1. Previous G=4 OOM (job 160364) was cgroup limit: Slurm allocated 8 GiB (1 CPU × DefMemPerCPU=8054 MB) without --mem flag. Fixed with --mem=500G. Per-process host RSS: ~1.5 GiB per vLLM worker (EngineCore model weights are GPU-resident; host cost is Python + metadata)."
+  multigpu_node_crossover:
+    value: "See per-BW, per-L table in docs/STATUS.md"
+    units: "string"
+    source: "data/raw/multigpu_scaling_20260925T003935Z/analysis.json"
+    script: "scripts/multigpu_analyze.py"
+    date: "2026-09-24"
+    note: "MEASURED (scaling efficiency) × MEASURED (storage ceiling + prefill coefficients). Fetch model: T_fetch_per_tok(G) = G*S/BW_node + H + M (serial per token; H2D is serial with storage read in the measured v2 pipeline, but in a pipelined implementation H2D overlaps with the next chunk's storage read since each GPU has its own PCIe link and storage is the slower stage by 19x; pipelined throughput would be ~5% higher). Two MARGINAL cells (within 10%): quiescent L=32K G=1 (ratio 1.01) and peak L=32K G=2 (ratio 1.06). Storage share of total node KV-restoration capacity: 10-65% depending on BW state, L, and G."
+
+  # ── 27x claim retracted (2026-09-18) ──
+  boundary_ratio_retracted:
+    value: "RETRACTED — computed from superseded HF coefficients (81941/3031 = 27.0x)"
+    units: "string"
+    source: "inline analysis 2026-09-18"
+    script: "inline analysis 2026-09-18"
+    date: "2026-09-18"
+    note: "PROCESS FAILURE: the 27x figure was L*(1400)/L*(3806) using HF coefficients (a=3.4551e-5, b=7.5003e-10) that remained in notes after vLLM became authoritative. With vLLM coefficients, the ratio is 103174/2825 = 36.5x, but that ratio is fragile because the denominator (2825) depends on the H2D margin. Replaced by worked-example claim (see below)."
+  defensible_claim:
+    value: "At L=30K tokens: recompute wins at 1400 MB/s (T_recompute=1585.6 ms vs T_fetch=2880 ms); fetch wins at 3806 MB/s (1585.6 ms vs 1105 ms). Holds under both payload-only and additive-overhead formulas."
+    units: "string"
+    source: "inline analysis 2026-09-18"
+    script: "inline analysis 2026-09-18"
+    date: "2026-09-18"
+    note: "Replacement for the retracted 27x boundary-ratio claim. A specific worked example at L=30K, not a ratio of crossover points. Verified in both formula variants (additive-overhead: T_fetch=2880/1105 ms; payload-only: 2809/1033 ms). The fetch advantage at 3806 MB/s is 1.44x (our formula) or 1.53x (payload-only), not sensitive to the H2D term."
+
   nvme_tokens:
     value: null
     units: "tokens"
@@ -524,26 +608,26 @@ queue_aware_compute:
   # paper's A100 Table A8 numbers. Compute window c = T_prefill(uncached)/L,
   # uncached = ctx*(1-hit).
   rstar_overestimate_factor:
-    value: "1.85 / 3.55 / 6.95 / 13.75 at N=2/4/8/16"
+    value: "2.0 / 4.0 / 8.0 / 16.0 at N=2/4/8/16 (slope=1.0)"
     units: "dimensionless ratio"
-    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
+    source: "data/raw/rerun_bc_157004.out"
     script: "analysis/queue_compute.py"
-    date: "2026-09-17"
-    note: "r*_iso / r*_queued = 1 + 0.85*(N-1), from measured Q(N)=0.85*(N-1)*service (job 155248). ObjectCache allocates r*_iso, so it over-provisions bandwidth to a queued request by this factor — bandwidth the request cannot usefully absorb (compute not yet started). Under batching all N share the GPU equally; queue position is degenerate."
+    date: "2026-09-19"
+    note: "CORRECTED 2026-09-19 for slope=1.0. r*_iso / r*_queued = 1 + 1.0*(N-1) = N. ObjectCache allocates r*_iso, so it over-provisions bandwidth to a queued request by Nx — bandwidth the request cannot usefully absorb (compute not yet started). Previous values (1.85/3.55/6.95/13.75) used the superseded 0.85 slope."
   superadditivity_interaction_wl_a_ms:
-    value: "Equal -588, Stall-opt -441, Cal.Stall-opt -406 (all sub-additive)"
+    value: "WITHDRAWN — sub-additivity depends on unconditional overlap. At slope=1.0: Equal -588, Stall-opt -431, Cal.SO -432"
     units: "ms (interaction = cell4 - [(cell2)+(cell3)-(cell1)])"
-    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
-    script: "analysis/queue_compute.py"
-    date: "2026-09-17"
-    note: "FIXED-N result. Superadditivity hypothesis TESTED AND NOT SUPPORTED: effects partially OFFSET. Mechanism: queueing stretches c 3.55x at N=4, giving the pipeline more shadow to hide transfers, so bimodal damage is smaller under queued-c (Stall-opt WL-A: +1036 ms at iso-c vs +595 ms at queued-c). BW-prop control has interaction exactly 0.0 — it is transfer-bound so max(X,c)=X and the compute window never binds."
+    source: "data/raw/overlap_sweep_157207.out"
+    script: "scripts/overlap_sweep.py"
+    date: "2026-09-20"
+    note: "WITHDRAWN 2026-09-20 as a mechanism finding. Sub-additivity scales linearly with overlap coverage: +3.5 ms at 0/31 (no overlap) to -430.8 ms at 31/31 (full overlap), ~14 ms per pipelined layer. Equal at 0/31 = +2.1 ms (zero), confirming no other channel. The 31/31 model IS ObjectCache's Equation 3, but the operative assumption is whether transfer may overlap time spent queued behind other requests (c_wall) vs only the request's own compute (c_useful). vLLM 0.29.0 KV connector source confirms: KV reads start AFTER scheduler admits request to batch, not while waiting in queue — so queueing time does NOT provide overlap in the real system."
   superadditivity_interaction_wl_b_ms:
-    value: "Equal -568, Stall-opt -276, Cal.Stall-opt -282 (all sub-additive)"
+    value: "WITHDRAWN — sub-additivity depends on unconditional overlap. At slope=1.0: Equal -568, Stall-opt -313, Cal.SO -319"
     units: "ms (interaction = cell4 - [(cell2)+(cell3)-(cell1)])"
-    source: "data/raw/queue_compute_20260917T035604Z/results.txt"
-    script: "analysis/queue_compute.py"
-    date: "2026-09-17"
-    note: "FIXED-N result. Same sign as Workload A. BW-prop interaction exactly 0.0."
+    source: "data/raw/overlap_sweep_157207.out"
+    script: "scripts/overlap_sweep.py"
+    date: "2026-09-20"
+    note: "WITHDRAWN 2026-09-20. Same analysis as WL-A. Equal at 0/31 = -0.4 ms (zero)."
   four_cell_added_ttft_wl_a_ms:
     value: "Equal [3534.4,4772.4,8855.7,9505.6]; Stall-opt [2839.4,3875.3,7896.2,8491.7]; Cal.Stall-opt [3057.7,3936.0,8070.2,8542.1]; KV-prop [3768.5,4871.2,8379.2,9272.7]; BW-prop [11108.6,12950.4,11309.0,13150.9]"
     units: "ms; cells = [iso+const, iso+bimod, queued+const, queued+bimod]"
@@ -572,40 +656,40 @@ queue_aware_compute:
   # (open-loop Poisson arrivals), the SIGN of the storage x compute coupling
   # flips from sub-additive to super-additive. See docs/DECISIONS.md 2026-09-17.
   coupling_sign_contingency:
-    value: "fixed-N sub-additive (Stall-opt -441 WL-A); feedback super-additive (Stall-opt +600.9 at 70% load)"
-    units: "ms (interaction = cell4 - [(cell2)+(cell3)-(cell1)])"
-    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
-    script: "analysis/queue_feedback.py"
-    date: "2026-09-17"
-    note: "HEADLINE. The sign of the coupling is determined by whether concurrency can respond to bandwidth. Not 'we found superadditivity' — the fixed-N and feedback results are a PAIR."
+    value: "WITHDRAWN as KV-serving finding — super-additive half is queueing convexity, sub-additive half depends on unconditional overlap assumption"
+    units: "string"
+    source: "data/raw/contingent_sign_test_157206.out"
+    script: "scripts/contingent_sign_test.py"
+    date: "2026-09-20"
+    note: "WITHDRAWN 2026-09-20. (1) Feedback super-additivity: 30-seed CIs exclude zero (30%: [+25,+48], 50%: [+127,+209], 70%: [+710,+1054] ms), but a convexity baseline (fair-share queue, no pipeline, no overlap) reproduces and exceeds it (sim-baseline: -22 ms at 50%, -147 ms at 70%, CIs excluding zero on negative side). Our layer pipeline dampens convexity. The interaction is textbook, not KV-specific. (2) Fixed-N sub-additivity: overlap sweep (0/31 to 31/31) shows interaction scales linearly from +3.5 ms (no overlap) to -430.8 ms (full overlap), ~14 ms per pipelined layer. Equal at 0/31 gives +2.1 (WL-A) / -0.4 (WL-B): no other channel. Sub-additivity is entirely from crediting transfer overlap with c_wall."
   feedback_interaction_stall_opt_ms:
-    value: "50% +79.4, 70% +600.9, 85% +1140.8 (all SUPER-additive)"
+    value: "WITHDRAWN as coupling finding — queueing convexity. Raw: 30% +36, 50% +167, 70% +874 ms (30-seed means, slope=1.0)"
     units: "ms interaction; load as fraction of ~1.59 req/s capacity"
-    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
-    script: "analysis/queue_feedback.py"
-    date: "2026-09-17"
-    note: "Non-censored loads only (0.0% unfinished at 30-85%). 95% EXCLUDED — censored and asymmetric (Equal 4.4% unfinished, Stall-opt 1.7%, BW-prop 0%), which deflates Equal's tail. Equal interaction: 50% +93.5, 70% +545.8, 85% +944.3. BW-prop ~0 until saturation (transfer-bound control)."
+    source: "data/raw/contingent_sign_test_157206.out"
+    script: "scripts/contingent_sign_test.py"
+    date: "2026-09-20"
+    note: "WITHDRAWN 2026-09-20 as a KV-serving finding. 30-seed bootstrap CIs exclude zero at all loads, confirming super-additivity is real and reproducible. But a no-pipeline convexity baseline reproduces it at equal or greater magnitude. The interaction grows steeply with load (+36/+167/+874) exactly as queueing convexity predicts. Prior values at slope=0.85 were similarly textbook."
   feedback_metastability_drain_s:
-    value: "70% load: 94s (1.57x episode); 85% load: 155s (2.58x episode)"
-    units: "s to drain N to pre-episode level after a 60s degradation episode"
-    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
-    script: "analysis/queue_feedback.py"
-    date: "2026-09-17"
-    note: "STRONGEST single finding. The queue built during a 60s bandwidth-degradation episode outlives its cause by 1.5-2.6x after bandwidth fully recovers. Connects to CacheGen estimator blindness: a throughput-based bandwidth estimator sees a healthy path during the drain window while the system is still degraded, for a reason (occupancy) it cannot observe. 95% load excluded as intrinsic instability (pre-episode N~28 and climbing)."
+    value: "WITHDRAWN — not distinguishable from ordinary backlog recovery"
+    units: "string"
+    source: "data/raw/metastability_deep_157007.out"
+    script: "scripts/metastability_deep.py"
+    date: "2026-09-19"
+    note: "WITHDRAWN 2026-09-19. 30-seed replication at 70% load, slope=1.0, against fluid-queue baseline t_drain=(n_end-preN)/(mu-lambda): simulated/fluid ratio mean=1.53, MEDIAN=1.09, std=1.58, range [0.00,7.24]. 15/28 seeds above 1.0, 13/28 below. Drain persistence mean=1.09x, median=0.75x, std=1.26x; only 9/27 draining seeds exceed 1.0x. Cannot distinguish from ordinary backlog recovery. The original 130s/2.16x (seed 7) was the second-highest of 5; 94s/1.57x (slope=0.85 era) was a single seed. The preN->drain mechanism (r=-0.031 at n=30) does not exist. What predicts drain time is delta_N (r=0.536) — how much backlog built — which is ordinary queue behavior. The 85% row excluded as intrinsic instability (no-episode control trends upward, same logic as 95% exclusion)."
   feedback_N_response:
     value: "peak N=41, mean N=12.56; mean N 13.33 low-BW vs 11.79 high-BW"
     units: "count of concurrent requests"
     source: "data/raw/queue_feedback_20260917T042116Z/N_timeseries.csv"
     script: "analysis/queue_feedback.py"
     date: "2026-09-17"
-    note: "Representative run: 85% load, bimodal BW, Stall-opt, queued. N tracks bandwidth inversely (ramps in low-BW episodes, drains on recovery) — confirms the feedback loop closes. Plot: N_vs_bw.png."
+    note: "Representative run at slope=0.85 (superseded). The feedback loop closing (N tracks BW inversely) is confirmed at both slope values. At slope=1.0, peak N=48 at 70% load (within measured N<=64 range)."
   feedback_effective_capacity:
-    value: "below the 1.59 req/s compute-only estimate (INFERRED, not measured)"
+    value: "saturation zone 70-85% of 1.59 req/s (1.11-1.35 req/s), not a point"
     units: "req/s"
-    source: "data/raw/queue_feedback_20260917T042116Z/results.txt"
-    script: "analysis/queue_feedback.py"
-    date: "2026-09-17"
-    note: "INFERENCE from observing intrinsic instability at 95% offered load (pre-episode N climbing), not a direct measurement. Naive r*_iso scheduling + queueing overhead reduce effective capacity below the compute-bound 1.59 req/s. To MEASURE it: sweep arrival rate with NO degradation episode and find where mean N stops draining (the stability boundary)."
+    source: "data/raw/stability_seeded_157006.out"
+    script: "scripts/stability_seeded.py"
+    date: "2026-09-19"
+    note: "MEASURED 2026-09-19 (replaces INFERRED). 5-seed sweep at slope=1.0: 70% is the only majority-stable load (3/5 stable, 0/5 unstable). 71-83% is transitional (mostly marginal). 84-85% has 2/5 unstable seeds. No sharp boundary — saturation is a zone, not a cliff. The compute-bound estimate of 1.59 req/s does not account for serialization overhead. The slope correction alone (0.85->1.0) moved the stability boundary from ~85% to ~70-76%, a qualitative shift: an assumed 15% batching benefit that does not exist inflates apparent capacity. A deployment sized on that assumption discovers the error during a degradation episode — exactly when the margin matters."
 
 trace_sensitivity_corrections:
   # Corrections 1 & 2 to the time-varying findings. PAPER's Table A8 compute

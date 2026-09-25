@@ -54,8 +54,13 @@ from stallopt import (
 A_VLLM = 3.5158e-05   # s/token       (rounds to 3.52e-5)
 B_VLLM = 5.8979e-10   # s/token^2      (rounds to 5.90e-10)
 
-# ── Measured queueing model (job 155248) ──
-Q_SLOPE = 0.85        # Q(N) = 0.85 * (N-1) * service ; T_last(N) ~= 1+0.85(N-1)
+# ── Measured queueing model ──
+# SUPERSEDED: Q_SLOPE = 0.85 (cold-start artifact from job 155248's
+# diagnose_batching.py — single unreplicated measurement, no warmup.
+# Contradicted by prefill_loaded_sweep_v2.py's own data at the same config.)
+# Corrected 2026-09-19: slope = 1.0 across 3 nodes, 5 batch budgets,
+# 3 context lengths, N up to 64, linear with beta=0.998.
+Q_SLOPE = 1.0         # Q(N) = 1.0 * (N-1) * service ; T_wall(N) ≈ N * T_service(1)
 
 # Workload: the 4 concurrent requests of paper Workloads A/B.
 WORKLOAD_SPEC = [
