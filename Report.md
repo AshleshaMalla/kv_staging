@@ -8,7 +8,7 @@ Large language model (LLM) inference serving systems face a fundamental choice w
 
 ### 1.2 Motivation and Real-World Relevance
 
-KV cache reuse is a critical optimization for LLM serving at scale. Systems such as ObjectCache (arXiv:2605.22850), CacheGen, LMCache, Mooncake, and SGLang HiCache all implement some form of external KV cache storage and retrieval. These systems must decide, per request, whether to fetch cached KV states or recompute them. Making this decision correctly requires knowing the **crossover point**: the context length above which recomputation becomes cheaper than fetching. This crossover depends on hardware-specific constants that are rarely measured end-to-end, and the interaction between storage variability and GPU queueing has not been empirically characterized.
+KV cache reuse is a critical optimization for LLM serving at scale. Systems such as ObjectCache (arXiv:2605.22850), Cake (arXiv:2410.03065), CacheGen (arXiv:2310.07240), LMCache (arXiv:2510.09665), Mooncake, and SGLang HiCache all implement some form of external KV cache storage and retrieval. These systems must decide, per request, whether to fetch cached KV states or recompute them. Making this decision correctly requires knowing the **crossover point**: the context length above which fetching becomes cheaper than recomputing. This crossover depends on hardware-specific constants that are rarely measured end-to-end, and the interaction between storage variability and GPU queueing has not been empirically characterized.
 
 ### 1.3 Main Research Question
 
@@ -33,7 +33,7 @@ where `T_fetch_per_tok = S/BW + H + M` is the per-token fetch cost, and `T_prefi
 
 ### 1.5 Project Status Summary
 
-This is a measurement study. The hardware measurements and crossover formula are the primary deliverables. Four simulation-derived candidate findings (metastability, super-additivity-as-coupling, sub-additivity-as-mechanism, and the contingent sign of storage × compute coupling) were tested with controls and all reduced to textbook queueing behavior or modeling assumptions. No simulation finding survived controlled testing. What remains is the hardware measurements and the crossover formula.
+This is a measurement study. The hardware measurements and crossover formula are the primary deliverables. Four simulation-derived candidate findings (metastability, super-additivity-as-coupling, sub-additivity-as-mechanism, and the contingent sign of storage × compute coupling) were tested with controls and all reduced to textbook queueing behavior or modeling assumptions. No simulation finding survived controlled testing. The saturation-zone simulation has not yet been tested against a baseline (Gate 2). What remains is the hardware measurements, the crossover formula, and the multi-GPU capacity analysis.
 
 ---
 
@@ -60,7 +60,7 @@ All measurements were performed on single GPU nodes from the `h100` partition.
 | SM clocks (sustained) | 960–1035 MHz under continuous compute load at 400W TDP |
 | SM clocks (max boost) | 1785 MHz (transient peak only) |
 
-**Clock note:** An early measurement campaign (2026-09-12) discovered all GPUs had SM clocks locked at 345 MHz (the minimum supported frequency). This was resolved by cluster administrators by 2026-09-15. All authoritative measurements use boosted clocks (sustained 960–1035 MHz under load), confirmed by 200ms-interval nvidia-smi clock logging throughout runs.
+**Clock note:** An early measurement campaign (2026-09-12) discovered all GPUs had SM clocks locked at 345 MHz (the minimum supported frequency). The cause is unknown; by 2026-09-15 the GPUs were observed boosting normally. All authoritative measurements use boosted clocks (sustained 960–1035 MHz under load), confirmed by 200ms-interval nvidia-smi clock logging throughout runs.
 
 Hardware provenance is captured by `scripts/hw_snapshot.sh` and stored in `data/hw/`.
 
@@ -70,7 +70,7 @@ Hardware provenance is captured by `scripts/hw_snapshot.sh` and stored in `data/
 |---------|---------|
 | Network filesystem | Hammerspace NFS (NFSv4.2 over IPoIB), mounted at `/mnt/REPACSS` |
 | NFS mount options | `nconnect=4` |
-| Local storage | NVMe (not yet benchmarked — OOM on test file creation) |
+| Local storage | A 3.5 TB virtual disk behind a PERC H755 RAID controller; underlying media and RAID level unknown. Not yet benchmarked — test-file creation failed, likely due to Slurm's default 8 GiB memory limit when `--mem` is omitted. Retrying with `--mem=200G` should resolve this. |
 | Host DRAM tier | Not yet benchmarked |
 
 ### 2.4 Software Stack
@@ -141,7 +141,7 @@ where:
 - **a** = 3.5158 × 10⁻⁵ s/token (linear coefficient, vLLM + FlashAttn v3, clock-logged)
 - **b** = 5.8979 × 10⁻¹⁰ s/token² (quadratic coefficient, same conditions)
 
-Setting `T_fetch_per_tok = a + b·L` (the per-token recompute marginal cost at length L) and solving:
+Setting `T_fetch_per_tok = a + b·L` (the average per-token recompute cost at length L) and solving:
 
 ```
 L* = (T_fetch_per_tok − a) / b
@@ -154,7 +154,7 @@ L* = (T_fetch_per_tok − a) / b
 On a single GPU, all resources — storage link, PCIe link, and GPU compute — are shared among N concurrent requests. The key measurement is:
 
 ```
-Q(N) = N × T_service(1)     (slope 0.98–1.02)
+Q(N) = N × T_service(1)     (per-length slope 0.98–1.02 at L=16K–32K; 1.11 at L=4K)
 ```
 
 Prefill serializes completely with no measurable batching benefit at production context lengths. This means L\* is **invariant in N** on a single GPU: both fetch and recompute scale by N, canceling in the crossover equation.
@@ -276,10 +276,12 @@ sbatch scripts/prefill_loaded_v2.sbatch
 
 **Method:** Sequential read sweeps across 1–16 parallel jobs (`numjobs`), with pre-created 1 GB (initial sweep) or 8 GB (engine comparison) test files. Each configuration runs for 30 seconds time-based. Results parsed from fio JSON output.
 
-**Aggregation:** Bandwidth is reported per operating regime (not averaged), because the storage system exhibits distinct states:
+**Aggregation:** Bandwidth is reported per observed operating state (not averaged), because the storage system varies over time far more than across parallel streams. The strongest evidence: the same fio configuration (posixaio, 4 jobs, 128K bs, direct=1, iodepth=16) measured 2,588 MB/s (quiescent baseline), 3,806 MB/s (Saturday evening), and 5,622 MB/s (during the posixaio sweep) at different times.
 
-| Regime | How Identified | BW (MB/s) |
-|--------|---------------|-----------|
+Observed states:
+
+| State | How Identified | BW (MB/s) |
+|-------|---------------|-----------|
 | Degraded | Spontaneous event during multi-node run | 1,400 |
 | Quiescent | 103-minute baseline (305 samples, CV=0.65%) | 2,588 |
 | Quiet evening | During contention experiment (Saturday evening) | 3,806 |
@@ -338,7 +340,7 @@ sbatch scripts/prefill_loaded_v2.sbatch
 | v1 (bytearray + pinned H2D) | 67.7 µs/tok | 2.0× |
 | v2 (pinned + O_DIRECT, single pipeline) | 47.3 µs/tok | 1.35× |
 
-The 2.9× reduction from naive to v2 demonstrates that the loading mechanism matters more than storage bandwidth for KV cache-sized files.
+The 2.9× reduction from naive to v2 shows that the loading mechanism matters as much as storage bandwidth for KV cache-sized files (compare with the 4.3× range across storage states: 1,400–6,000 MB/s).
 
 ### 5.4 Q(N) Concurrency Scaling
 
@@ -410,7 +412,7 @@ The 2.9× reduction from naive to v2 demonstrates that the loading mechanism mat
 | Spontaneous degradation | 2.3× drop to ~1,400 MB/s (observed during multi-node run, suspected external tenant load) |
 | Aggressor injection | Read-only aggressor nodes did not reproduce the spontaneous degradation |
 
-**Interpretation:** Hammerspace NFS provides 1.4–6.0 GB/s depending on the operating regime. The bandwidth is a per-node ceiling (no parallelism benefit), bimodal (discrete operating states rather than continuous variation), and episodic (spontaneous degradation events occur but are not reproducible on demand). The quiescent regime is highly stable.
+**Interpretation:** Hammerspace NFS provides 1.4–6.0 GB/s depending on the time of measurement. The bandwidth is a per-node ceiling (no parallelism benefit) and varies across discrete operating states rather than continuously. The quiescent regime is highly stable (CV = 0.65%), but the system shifts between states unpredictably. Spontaneous degradation events occur but are not reproducible on demand.
 
 ### 6.2 Prefill Latency and the T(L) = a·L + b·L² Fit
 
@@ -456,11 +458,11 @@ The vLLM b coefficient is 21% lower than HF's, attributable to FlashAttention v3
 
 The read bandwidth (2.92 GB/s) falls within the fio-measured range (2.6–6.0 GB/s). The H2D bandwidth (55.3 GB/s) is consistent with PCIe Gen5 x16.
 
-The v2 full pipeline cost (47.3 µs/tok) is **1.35× the vLLM prefill linear coefficient** (35.16 µs/tok), meaning that at the marginal level, fetching a single token's KV cache is only 35% more expensive than the linear component of computing it.
+The v2 full pipeline cost (47.3 µs/tok) is **1.35× the vLLM prefill linear coefficient** (35.16 µs/tok). Note that this is a microbenchmark: a production KV connector would add work (paged-layout placement, layer-by-layer delivery, format conversion) that this pipeline does not capture, so 47.3 µs/tok is a lower bound on real fetch cost.
 
 ### 6.4 Crossover Points
 
-**Purpose:** Determine at each bandwidth state the context length where fetching becomes more expensive than recomputing.
+**Purpose:** Determine at each bandwidth state the context length L\* above which fetching becomes cheaper than recomputing (recompute grows quadratically, so it eventually exceeds the linear fetch cost).
 
 **Formula:** `L* = (S/BW + H + M − a) / b`, with all inputs measured.
 
@@ -491,13 +493,14 @@ This holds under both the full formula and the payload-only variant.
 
 | Fit | Value |
 |-----|-------|
-| Global linear slope | 0.998 (RMSE: reported in results.json) |
+| Global linear slope | 1.028 |
 | Per-length slopes | L=4K: 1.107, L=16K: 0.994, L=32K: 0.982 |
+| Power-law exponent β | 0.998 (consistent with linear; β ≈ 1) |
 | Cross-node delta | < 0.7% |
 | Batch-budget dependence | None (variation ~0.02, within noise) |
 | Quadratic curvature | None significant |
 
-**Interpretation:** Prefill serializes completely. Q(N) = N × T_service(1) with slope 0.98–1.02. There is no measurable batching benefit at production context lengths. The slightly super-linear slope at L=4K (1.107) reflects short-context per-step overhead. The relationship is linear to N=64 with no curvature (β = 0.998 in the power-law fit).
+**Interpretation:** Prefill serializes completely. Q(N) = N × T_service(1) with per-length slopes 0.98–1.02 at L=16K–32K and 1.11 at L=4K. There is no measurable batching benefit at production context lengths. The super-linear slope at L=4K reflects short-context per-step overhead (the global slope of 1.028 is pulled upward by L=4K). The relationship is linear to N=64 with no curvature (power-law β = 0.998).
 
 **Implication for the crossover:** On a single GPU, since both fetch time and recompute time scale by N under concurrency, the crossover L\* is invariant in N. The loaded crossover table reduces to the N=1 table.
 
@@ -518,7 +521,29 @@ This holds under both the full formula and the payload-only variant.
 | 3 | 97.4–99.9% | 97.8–100.1% |
 | 4 | 98.3–98.6% | 98.3–98.9% |
 
-No per-GPU clock degradation or power throttling at G=4. Mean power per active GPU: 82–132W (well below 400W TDP). Host RSS: ~1.5 GiB per vLLM worker (model weights are GPU-resident).
+Host RSS: ~1.5 GiB per vLLM worker (model weights are GPU-resident).
+
+**Temporal overlap.** The workers run as parallel processes, but each worker's internal sequence (warmup → L=16K × 5 reps → L=32K × 5 reps) begins with model loading that varies by a few seconds per GPU. For L=32K — which dominates service time (5 × 1.7 s = 8.5 s per GPU) — the four GPUs' active windows overlapped for 82–92% of the prefill duration across the three jobs (start spread 0.6–2.9 s over a ~16 s window). This confirms that GPUs were prefilling simultaneously during the L=32K measurement. At L=16K, individual reps (~0.7 s each) are short relative to the inter-GPU stagger (1–2 s), so overlap within each rep was only partial. The L=16K efficiency numbers are therefore weaker evidence of behavior under simultaneous contention.
+
+**In-burst power and clocks.** The whole-run mean power of 82–132 W per GPU is diluted by model loading, warmup, and gaps between segments. When all four GPUs were prefilling at the same time, the picture is different:
+
+| Condition | Power per GPU | SM clocks |
+|-----------|--------------|-----------|
+| G=1 (single GPU under load) | 370–371 W mean, up to 415 W | 945–1110 MHz |
+| G=4 (all 4 GPUs simultaneously active) | 383–394 W mean, up to 414 W | 945–1125 MHz |
+
+At both G=1 and G=4, GPUs operated within 2–4% of the 400 W TDP and sustained SM clocks in the same range as the authoritative single-GPU prefill run (960–1035 MHz). There was **no additional throttling at G=4 beyond the per-GPU power limit already present at G=1**.
+
+**Excluded run.** An earlier multi-GPU run (job 160364, rpg-93-3) used the same sbatch script but without the `--mem` flag. Slurm allocated only 8 GiB total (1 CPU × DefMemPerCPU = 8054 MB) — a configuration confound independent of the GPU scaling result. The job is excluded in full for this reason. Its results for reference:
+
+| G | L=16K efficiency | L=32K efficiency | Note |
+|---|-----------------|-----------------|------|
+| 1 | 100% | 100% | |
+| 2 | 99.0% | 98.3% | Consistent with post-fix runs |
+| 3 | 94.7% | 97.7% | L=16K lower than any post-fix run (97.4–99.9%) |
+| 4 | — | — | Invalid: 3 of 4 GPUs OOM-killed |
+
+The lower G=3 L=16K efficiency (94.7%) is likely caused by memory reclaim pressure near the 8 GiB cgroup limit (3 vLLM processes × ~1.5 GiB RSS each approaches the limit; no swap is configured on these nodes). The G=2 data is consistent with post-fix measurements.
 
 **Node-level fetch-vs-recompute crossover (L=16,384):**
 
@@ -551,9 +576,9 @@ No per-GPU clock degradation or power throttling at G=4. Mean power per active G
 
 At degraded bandwidth with all 4 GPUs active, storage contributes only 10–12% of total restoration capacity.
 
-### 6.7 Saturation Zone
+### 6.7 Saturation Zone (Simulation — Not Yet Validated)
 
-**Purpose:** Determine the effective serving capacity under the measured Q(N) = N × T_service(1) serialization model, using simulation.
+**Purpose:** Explore the effective serving capacity under the measured Q(N) = N × T_service(1) serialization model, using simulation.
 
 **Method:** 5-seed Poisson arrival-rate sweep (`scripts/stability_seeded.py`) at slope = 1.0, measuring queue stability at each load fraction of the compute-bound capacity estimate (~1.59 req/s).
 
@@ -565,7 +590,9 @@ At degraded bandwidth with all 4 GPUs active, storage contributes only 10–12% 
 | 71–83% | Transitional (mostly marginal) |
 | 84–85% | 2/5 unstable seeds |
 
-**Interpretation:** The effective capacity is materially below the 1.59 req/s compute-bound estimate. The saturation region is a zone (70–85%), not a sharp boundary. The slope correction from 0.85 to 1.0 moved the stability boundary from ~85% to ~70–76%, a qualitative shift. An assumed 15% prefill batching benefit that does not exist inflates apparent capacity by 12–24%.
+**Caveat: this simulation has NOT passed Gate 2 (baseline comparison).** With pure serialization, a single-server queue is stable at any load below 100% of service capacity. Instability at 70–85% of the 1.59 req/s reference most likely means the reference omits capacity consumed by storage transfers, or the trend test mislabels a high-variance stable queue. The result is better understood as a statement about the simulator's capacity reference point, not about the hardware's actual stability boundary.
+
+**What does not depend on simulation:** The Q(N) slope correction from 0.85 to 1.0 means that assuming a 15% prefill batching benefit (slope 0.85 implies batching saves 15% per concurrent request) overstates capacity by a factor of 1/0.85 ≈ 18%. This follows directly from the Q(N) measurement and requires no simulation.
 
 ### 6.8 Simulation Experiments (Withdrawn)
 
@@ -593,7 +620,7 @@ Four simulation-derived candidate findings were tested and subsequently withdraw
 
 **Question:** Does a degradation episode produce queue persistence that outlives the episode?
 
-**Result:** 30-seed replication at 70% load showed median simulated/fluid drain ratio = 1.09 (indistinguishable from ordinary backlog recovery). The original 130s / 2.16× headline was seed 7 of 5 — the second-highest draw from a distribution with median 0.75×.
+**Result:** 30-seed replication at 70% load showed median simulated/fluid drain ratio = 1.09 (indistinguishable from ordinary backlog recovery). The original 130s / 2.16× headline was seed 7, one of five seeds — the second-highest draw from a distribution with median 0.75×.
 
 **Why withdrawn:** Cannot distinguish from ordinary backlog recovery. The pre-episode N → drain-time mechanism does not exist (r = −0.031).
 
@@ -607,45 +634,75 @@ Four simulation-derived candidate findings were tested and subsequently withdraw
 
 ---
 
-## 7. Key Findings
+## 7. Related Work
 
-### 7.1 Measured Observations
+The fetch-vs-recompute tradeoff for KV caches has been addressed by several recent systems. Crossover-style analysis is not new; our contribution is measuring every input on a real shared-storage facility, quantifying the loader-mechanism effect, characterizing prefill serialization, and analyzing the node-level multi-GPU balance.
 
-1. **The crossover is bandwidth-state-dependent and spans the practical context range.** L\* ranges from ~103K tokens at degraded bandwidth (1,400 MB/s) to nonexistent at peak bandwidth (4,993+ MB/s), where fetch always wins. At the quiescent baseline (2,588 MB/s), L\* ≈ 30K tokens.
+**Cake** (Jin et al., ICML 2025, arXiv:2410.03065) computes KV tokens from the start of the sequence while loading cached tokens from the end, in parallel. The choice is not strictly either/or — Cake blends both strategies. Its evaluation simulates storage bandwidth using computed delays rather than a real storage system. Our storage-share result (§6.6) speaks directly to Cake's architecture: even a system that fetches and recomputes together gets only 10–65% of its total KV-restoration capacity from storage on this facility, depending on bandwidth state and GPU count.
 
-2. **The loading mechanism matters as much as storage bandwidth.** The fetch pipeline progression from naive (135.3 µs/tok) to optimized (47.3 µs/tok) represents a 2.9× reduction. Production systems using raw binary reads into pinned buffers with O_DIRECT achieve costs within the range of measured storage bandwidth.
+**ObjectCache** (Zhu et al., arXiv:2605.22850) serves KV caches from S3-compatible object storage with layerwise delivery and a bandwidth allocator that distributes capacity across concurrent requests. Its Table A8 reports per-layer compute windows and required overlap bandwidths for Llama 3.1 8B, closely related to our crossover analysis. Shared-bandwidth caps are emulated with pacing rather than measured from a live storage system. Our simulation code (`analysis/stallopt.py`) reproduces ObjectCache's allocation policies for the comparison experiments in §6.8.
 
-3. **GPU prefill serializes completely at production context lengths.** Q(N) = N × T_service(1) with slope 0.98–1.02, measured across 3 nodes, 5 batch budgets, 3 lengths, N to 64. No batching benefit.
+**LMCache** (arXiv:2510.09665) §8.7 reports that loading KV caches beats prefill only above a context-length crossover when network bandwidth is low, and recommends that loading should be adaptive — the same tradeoff our crossover formula captures.
 
-4. **Single-GPU concurrency does not move the crossover.** Storage, PCIe, and GPU compute are all shared among concurrent requests on a single GPU, so all scale by N and cancel.
-
-5. **Multi-GPU scaling is near-ideal (98.3–101.7% at G=1–4).** Per-GPU service times are stable as more GPUs become active. No clock degradation or power throttling observed.
-
-6. **Across a node's GPUs, recompute gains relative to fetch.** Each GPU has its own compute and PCIe, but the node's storage ceiling is shared. At quiet-evening and peak bandwidth — where single-GPU fetch wins — recompute wins at G ≥ 2.
-
-7. **Hammerspace NFS bandwidth is bimodal and episodic.** Observed states range from 1,400 to ~6,000 MB/s. A spontaneous 2.3× degradation event was documented. The quiescent regime is highly stable (CV = 0.65%).
-
-8. **The H2D overhead term (H = 2.38 µs/tok) is decisive at high bandwidth.** The quiet-evening crossover (row 3) exists only because H > 0.71 µs/tok. Without H, the payload-only formula gives no crossover at 3,806 MB/s.
-
-9. **Effective serving capacity is 70–85% of the compute-bound estimate.** A non-existent prefill batching benefit inflates apparent capacity by 12–24%.
-
-### 7.2 Interpretations
-
-- The crossover formula `L* = (S/BW + H + M − a) / b` is internally consistent, audited, and composed entirely of measured inputs. It provides a direct way for serving systems to decide between fetch and recompute given their storage tier's bandwidth.
-
-- The storage share of total node KV-restoration capacity (10–65%) quantifies how much a system can gain from a KV cache storage tier versus investing in more GPU compute. At degraded bandwidth with 4 GPUs active, storage contributes only 10–12% of capacity — the system is GPU-rich relative to its storage.
-
-- Simulation experiments exploring storage × compute coupling did not produce findings specific to KV cache serving. All candidate interactions reduced to textbook queueing behavior or modeling assumptions once baselines or controls were applied. This is itself a finding: the interactions are real but not novel — they are standard queueing theory operating on KV-serving parameters.
-
-### 7.3 Relationship to Research Hypothesis
-
-The original hypothesis — that there exists a measurable crossover length L\* that depends on storage bandwidth — is confirmed. The crossover is well-characterized and varies dramatically with bandwidth state: from ~103K tokens (within the model's context limit) to non-existent (fetch always wins). The secondary investigation into whether queueing and storage variability compound produced negative results after controlled testing.
+**CacheGen** (SIGCOMM 2024, arXiv:2310.07240) adapts between streaming KV tokens and falling back to recomputation based on the previous chunk's throughput. Its estimator is throughput-based; the simulation experiments in §6.8 (now withdrawn) explored whether throughput is a sufficient statistic for the queueing state.
 
 ---
 
-## 8. Reproducing the Experiments
+## 8. Key Findings
 
-### 8.1 Prerequisites
+### 8.1 Measured Observations
+
+1. **The crossover depends on bandwidth state and spans the practical context range.** L\* ranges from ~103K tokens at degraded bandwidth (1,400 MB/s) to nonexistent at peak bandwidth (4,993+ MB/s), where fetch always wins. At the quiescent baseline (2,588 MB/s), L\* ≈ 30K tokens.
+
+2. **The loading mechanism matters as much as storage bandwidth.** The fetch pipeline progression from naive (135.3 µs/tok) to optimized (47.3 µs/tok) is a 2.9× reduction. This is comparable to the 4.3× range across observed storage states (1,400–6,000 MB/s).
+
+3. **GPU prefill serializes completely at production context lengths.** Q(N) = N × T_service(1) with per-length slopes 0.98–1.02 at L=16K–32K and 1.11 at L=4K, measured across 3 nodes, 5 batch budgets, 3 lengths, N to 64. No batching benefit.
+
+4. **Single-GPU concurrency does not move the crossover.** Storage, PCIe, and GPU compute are all shared among concurrent requests on a single GPU, so all scale by N and cancel.
+
+5. **Multi-GPU scaling is near-ideal (98.3–101.7% at G=1–4).** Per-GPU service times are stable as more GPUs become active. No additional throttling at G=4 beyond the per-GPU power limit already present at G=1 (both draw 370–394 W during prefill).
+
+6. **Across a node's GPUs, recompute gains relative to fetch.** Each GPU has its own compute and PCIe, but the node's storage ceiling is shared. At quiet-evening and peak bandwidth — where single-GPU fetch wins — recompute wins at G ≥ 2.
+
+7. **Hammerspace NFS bandwidth varies across discrete operating states.** Observed states range from 1,400 to ~6,000 MB/s. A spontaneous 2.3× degradation event was documented. The quiescent regime is highly stable (CV = 0.65%).
+
+8. **The H2D overhead term (H = 2.38 µs/tok) is decisive at high bandwidth.** The quiet-evening crossover (row 3) exists only because H > 0.71 µs/tok. Without H, the payload-only formula gives no crossover at 3,806 MB/s.
+
+### 8.2 Interpretations
+
+- The crossover formula `L* = (S/BW + H + M − a) / b` is internally consistent, audited, and composed entirely of measured inputs. It is one input to a serving system's fetch-vs-recompute decision; a production system would also need to account for connector overhead, paged-layout costs, and dynamic bandwidth estimation.
+
+- The storage share of total node KV-restoration capacity (10–65%) quantifies how much a system gains from a KV cache storage tier versus investing in more GPU compute. At degraded bandwidth with 4 GPUs active, storage provides only 10–12% of capacity — the system is GPU-rich relative to its storage. This is directly relevant to systems like Cake that blend fetch and recompute: on this facility, the recompute side dominates at G ≥ 2.
+
+- Simulation experiments exploring storage × compute coupling did not produce findings specific to KV cache serving. All candidate interactions reduced to textbook queueing behavior or modeling assumptions once baselines or controls were applied.
+
+- Assuming a prefill batching benefit that does not exist (slope 0.85 instead of 1.0) overstates capacity by 1/0.85 ≈ 18%. This follows from the Q(N) measurement directly and does not depend on simulation.
+
+### 8.3 Relationship to Research Hypothesis
+
+The original hypothesis — that there exists a measurable crossover length L\* that depends on storage bandwidth — is supported: L\* is computed from measured inputs and varies from ~103K tokens down to ~2.8K tokens across observed bandwidth states. However, the crossover has not been validated end to end (no experiment fetched and recomputed a KV cache in vLLM and compared the actual latencies). The secondary investigation into whether queueing and storage variability compound produced negative results after controlled testing.
+
+---
+
+## 9. Limitations
+
+1. **The crossover is computed, not measured end to end.** No experiment in this repository fetched a KV cache and recomputed a prefill in vLLM and compared the actual end-to-end latencies. The crossover points are computed from separately measured inputs (storage bandwidth, fetch pipeline cost, prefill coefficients). End-to-end validation in a live serving system remains open.
+
+2. **The fetch cost is a microbenchmark lower bound.** The v2 fetch pipeline (`os.preadv` into pinned memory + `to('cuda')`) measures the raw I/O and transfer path. A production KV connector adds work that this microbenchmark does not capture: fitting data into vLLM's paged KV layout, layer-by-layer delivery, connector scheduling overhead, and potential format conversion. The 47.3 µs/tok figure is a lower bound on what a real connector would achieve.
+
+3. **Prefill coefficients depend on sustained SM clock, which varied.** Across nodes and runs, sustained SM clocks ranged from 825 to 1125 MHz (the authoritative fit used 960–1035 MHz on a single node). Different clock states shift L\*, most noticeably in the fragile quiet-evening row where the crossover margin is only 1.66 µs/tok. The coefficients should be understood as specific to the H100 NVL at 400 W TDP, not universal to H100.
+
+4. **Storage bandwidth is not controllable.** The observed 2.3× degradation was spontaneous (suspected external tenant load). Controlled aggressor injection did not reproduce it. Without a reproducible trigger, experiments that require bandwidth variance cannot move beyond simulation.
+
+5. **Local disk and host DRAM tiers are unmeasured.** The local disk on these nodes is a 3.5 TB virtual disk behind a PERC H755 RAID controller (underlying media and RAID level unknown). It was not benchmarked due to an unrelated memory-allocation failure. Host DRAM bandwidth was not attempted. Crossover points for these faster tiers cannot yet be computed.
+
+6. **The storage-share figure assumes fetch and recompute capacities add.** The node-level storage-share percentages (10–65%) model a Cake-style design where fetch and recompute run in parallel and their throughputs sum. This is computed from separately measured inputs (storage bandwidth ceiling, per-GPU prefill throughput), not measured by actually running both simultaneously on the same node.
+
+---
+
+## 10. Reproducing the Experiments
+
+### 10.1 Prerequisites
 
 - Access to the REPACSS cluster `h100` partition (or equivalent H100 NVL nodes).
 - Conda environment `m1` with vLLM 0.29.0, PyTorch, transformers, FlashAttention v3.
@@ -654,7 +711,7 @@ The original hypothesis — that there exists a measurable crossover length L\* 
 - fio installed (user-local at `~/opt/bin/fio` on REPACSS).
 - Model weights at `/mnt/SHARED-AREA/Llama-series/Llama-3.1-8B`.
 
-### 8.2 Environment Setup
+### 10.2 Environment Setup
 
 ```bash
 eval "$(/path/to/miniforge3/bin/conda shell.bash hook)"
@@ -665,7 +722,7 @@ export PATH="$CUDA_HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$CONDA_PREFIX/lib:${LD_LIBRARY_PATH:-}"
 ```
 
-### 8.3 Core Experiments
+### 10.3 Core Experiments
 
 **Hardware snapshot:**
 ```bash
@@ -710,7 +767,7 @@ sbatch scripts/multigpu_prefill_scaling.sbatch
 ```
 Output: `data/raw/multigpu_scaling_<timestamp>/` (per-GPU JSONs + analysis.json)
 
-### 8.4 Analysis
+### 10.4 Analysis
 
 **Crossover computation:**
 ```bash
@@ -733,14 +790,14 @@ python3 scripts/overlap_sweep.py           # Overlap sweep
 python3 scripts/stability_seeded.py        # Saturation zone sweep
 ```
 
-### 8.5 Tests
+### 10.5 Tests
 
 ```bash
 pytest tests/test_provenance.py
 ```
 Verifies that all non-null entries in `config/measured_constants.yaml` have valid source data paths, script paths, and dates.
 
-### 8.6 Where Results Are Stored
+### 10.6 Where Results Are Stored
 
 | Data | Location |
 |------|----------|
@@ -752,7 +809,7 @@ Verifies that all non-null entries in `config/measured_constants.yaml` have vali
 
 ---
 
-## 9. Repository Structure
+## 11. Repository Structure
 
 ```
 kv_staging/
@@ -835,9 +892,9 @@ kv_staging/
 
 ---
 
-## 10. Current Research Status
+## 12. Current Research Status
 
-### 10.1 Completed and Demonstrated
+### 12.1 Completed and Demonstrated
 
 | Item | Status |
 |------|--------|
@@ -850,15 +907,15 @@ kv_staging/
 | Multi-GPU scaling (G=1–4, 3 runs, 2 nodes) | Measured |
 | Node-level fetch-vs-recompute table | Computed from measurements |
 | Storage share of total node capacity | Computed from measurements |
-| Saturation zone characterization | Simulated (5-seed sweep) |
+| Saturation zone simulation | Simulated (5-seed sweep); not yet validated against baseline (Gate 2) |
 | Simulation-derived findings tested with controls | All withdrawn (4/4) |
 | Provenance system with automated tests | Implemented |
 
-### 10.2 Remaining Planned Work (Identifiable from Repository)
+### 12.2 Remaining Planned Work (Identifiable from Repository)
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Local NVMe bandwidth | Pending | OOM on test file creation in prior attempt |
+| Local disk bandwidth | Pending | 3.5 TB disk (PERC H755 RAID, not NVMe). Test-file creation failed, likely the same 8 GiB Slurm default; retry with `--mem=200G` |
 | Host DRAM (PCIe) bandwidth tier | Pending | Not attempted |
 | Achieved TFLOPS at boosted clocks | Stale | Current 152 TFLOPS value measured at 345 MHz clock-lock |
 | Reproduce storage degradation | Open | Controlled aggressor injection did not reproduce the spontaneous event |
